@@ -1,54 +1,49 @@
-# Prof Amina : professeure de français vocale
+# Prof Amina : professeure de français en conversation vocale (version 2, temps réel)
 
-Application vocale pour apprendre le français à partir de la darija marocaine.
-L'élève appuie sur le micro et parle. Prof Amina lui répond à voix haute, en français, et réexplique en darija quand c'est nécessaire.
+L'élève appuie une seule fois sur « Commencer », puis parle naturellement avec Amina, comme au téléphone.
+Il n'y a pas de bouton à presser à chaque phrase : Amina détecte toute seule quand l'élève a fini de parler, et on peut l'interrompre.
+Amina explique en darija marocaine et fait répéter les phrases en français.
 
-## Ce qu'il y a dans le dossier
+Technologie : l'API Realtime d'OpenAI (la même que le mode vocal de ChatGPT), connectée en WebRTC.
+
+## Fichiers
 
 | Fichier | Rôle |
 |---|---|
-| `server.js` | Le serveur. Il reçoit la voix et parle à Groq (et à ElevenLabs si vous l'activez). |
+| `server.js` | Crée une clé temporaire (10 minutes) pour chaque conversation, avec les consignes d'Amina. La vraie clé OpenAI reste sur le serveur. |
 | `public/index.html` | L'application affichée sur le téléphone |
 | `public/manifest.webmanifest`, `public/icon-*.png` | L'icône et le nom pour l'écran d'accueil |
-| `Dockerfile` | La recette que Coolify utilise pour lancer l'application |
+| `Dockerfile` | La recette utilisée par Coolify |
 
-## Les réglages (variables d'environnement, à saisir dans Coolify)
+## Réglages (Environment Variables dans Coolify)
 
 | Nom | Obligatoire ? | Valeur |
 |---|---|---|
-| `GROQ_API_KEY` | **oui** | votre clé Groq (console.groq.com → API Keys) |
-| `ACCESS_CODE` | conseillé | un code à 4 chiffres, par exemple `2580`. Il est demandé une seule fois sur le téléphone et empêche les inconnus d'utiliser votre clé. |
-| `ELEVENLABS_API_KEY` | non | votre clé ElevenLabs. Si elle est présente, l'application utilise les belles voix ; sinon, elle utilise la voix du téléphone. |
-| `ELEVEN_VOICE_AR` | non | identifiant de la voix darija (par défaut : Ghizlane, `OfGMGmhShO8iL9jCkXy8`) |
-| `ELEVEN_VOICE_FR` | non | identifiant de la voix française (par défaut : la même que la voix darija) |
-| `GROQ_MODEL` | non | modèle de discussion (par défaut : `openai/gpt-oss-120b`) |
+| `OPENAI_API_KEY` | **oui** | clé API OpenAI (platform.openai.com → API keys), commence par `sk-` |
+| `ACCESS_CODE` | conseillé | code demandé une fois sur le téléphone (ex. `2580`) |
+| `REALTIME_MODEL` | non | par défaut `gpt-realtime-2.1`. Version moins chère : `gpt-realtime-2.1-mini` |
+| `REALTIME_VOICE` | non | par défaut `marin` (voix féminine) |
 
-> Avec ElevenLabs : si la voix ne marche pas, ajoutez d'abord la voix « Ghizlane » à « My Voices » depuis la Voice Library du site ElevenLabs.
+Pour toutes ces variables, choisissez **Build time : Not available during build**.
+`GROQ_API_KEY` et `ELEVENLABS_API_KEY` ne servent plus dans cette version : vous pouvez les laisser ou les supprimer.
 
-## Mise en ligne avec Coolify (sur votre VPS Hostinger)
+## Mise à jour sur GitHub et Coolify
 
-1. **Mettre le code sur GitHub** : créez un dépôt (par exemple `prof-amina`), puis faites glisser tous les fichiers du dossier dans la page « Add file → Upload files ».
-2. **Ouvrir Coolify** : dans hPanel, allez dans VPS → Gérer → « Gérer le panel ».
-3. **Créer l'application** : Projects → + New → Resource → **Public Repository** (ou « Private Repository (with GitHub App) » si le dépôt est privé). Collez l'adresse du dépôt, et choisissez le Build Pack **Dockerfile**.
-4. **Port** : `3000` (champ « Ports Exposes »).
-5. **Adresse (Domains)** : par exemple `https://prof.72.62.190.74.sslip.io`. Le **https://** est indispensable, sinon le micro du téléphone ne marchera pas. Coolify crée le certificat tout seul.
-6. **Environment Variables** : ajoutez `GROQ_API_KEY`, `ACCESS_CODE` et, si vous l'avez, `ELEVENLABS_API_KEY`.
-7. Cliquez sur **Deploy**, puis attendez que le statut soit « Running ».
-8. **Vérifier** : ouvrez `https://prof.72.62.190.74.sslip.io/api/health`. Vous devez voir `"keySet":true`.
+1. Sur GitHub (dépôt `prof-amina`) : Add file → Upload files, puis glissez `server.js`, `LISEZMOI.md` et le dossier `public`. Les fichiers existants sont remplacés. Terminez par Commit changes.
+2. Dans Coolify : Environment Variables → ajoutez `OPENAI_API_KEY`.
+3. Cliquez sur **Deploy**.
+4. Vérifiez `https://prof.72.62.190.74.sslip.io/api/health` : vous devez voir `"mode":"realtime"` et `"keySet":true`.
 
-## Installer sur le Samsung
+## Coûts et sécurité
 
-1. Ouvrez l'adresse dans **Chrome**.
-2. Tapez le code d'accès.
-3. Menu ⋮ → **Ajouter à l'écran d'accueil** (ou « Installer l'application »).
-4. À la première leçon, autorisez le **micro**.
-5. Si vous n'utilisez pas ElevenLabs : Paramètres → Gestion globale → Langue → **Synthèse vocale**, choisissez le moteur Google, puis installez les voix **Français** et **Arabe**.
+- OpenAI facture à la minute de conversation. Fixez une **limite de dépense** dans platform.openai.com → Settings → Limits.
+- L'application **raccroche toute seule après 2 minutes sans parole**.
+- Le bouton rouge **Raccrocher** arrête immédiatement la facturation.
 
 ## Utilisation
 
-- **🎤** : appuyer une fois pour parler, puis appuyer encore pour finir.
-- **🔁 عاودي** : réécouter la dernière phrase de la professeure.
-- **❓ ما فهمتش** : demander une explication en darija.
-- **↺** (en haut à droite) : recommencer la leçon depuis le début.
-
-Les conversations sont gardées sur le téléphone, une par thème.
+1. Choisir un thème.
+2. Appuyer sur **▶️ Commencer / يالاه نبداو**. Amina salue et commence la leçon.
+3. Parler normalement. La boule devient verte quand l'élève parle et orange quand Amina parle.
+4. **📞 Raccrocher** pour terminer. La séance suivante reprend là où on s'était arrêté, car Amina se souvient de la fin de la dernière séance.
+5. **↺** (en haut à droite) : effacer la mémoire de ce thème pour recommencer à zéro.

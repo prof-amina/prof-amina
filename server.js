@@ -1,28 +1,26 @@
-// Prof de français vocal — serveur (Node 20+, aucune dépendance)
+// Prof Amina — serveur (Node 20+, aucune dépendance)
+// Conversation vocale en temps réel avec l'API Realtime d'OpenAI (WebRTC).
+// Le téléphone parle directement à OpenAI avec une clé temporaire créée ici :
+// la vraie clé OPENAI_API_KEY ne quitte jamais le serveur.
+//
 // Variables d'environnement :
-//   GROQ_API_KEY  (obligatoire)  clé API Groq
-//   ACCESS_CODE   (conseillé)    code demandé une fois sur le téléphone
-//   GROQ_MODEL    (optionnel)    modèle de discussion, défaut openai/gpt-oss-120b
-//   STT_MODEL     (optionnel)    modèle de transcription, défaut whisper-large-v3
-//   PORT          (optionnel)    défaut 3000
+//   OPENAI_API_KEY   (obligatoire)  clé API OpenAI (platform.openai.com)
+//   ACCESS_CODE      (conseillé)    code demandé une fois sur le téléphone
+//   REALTIME_MODEL   (optionnel)    défaut gpt-realtime-2.1 (moins cher : gpt-realtime-2.1-mini)
+//   REALTIME_VOICE   (optionnel)    défaut marin
+//   PORT             (optionnel)    défaut 3000
 
 const http = require("http");
 const fs = require("fs");
 const path = require("path");
 
 const PORT = process.env.PORT || 3000;
-const GROQ_API_KEY = process.env.GROQ_API_KEY || "";
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY || "";
 const ACCESS_CODE = process.env.ACCESS_CODE || "";
-const GROQ_MODEL = process.env.GROQ_MODEL || "openai/gpt-oss-120b";
-const STT_MODEL = process.env.STT_MODEL || "whisper-large-v3";
-const GROQ_BASE_URL = process.env.GROQ_BASE_URL || "https://api.groq.com/openai/v1";
+const REALTIME_MODEL = process.env.REALTIME_MODEL || "gpt-realtime-2.1";
+const REALTIME_VOICE = process.env.REALTIME_VOICE || "marin";
+const OPENAI_BASE_URL = process.env.OPENAI_BASE_URL || "https://api.openai.com/v1";
 const PUBLIC_DIR = path.join(__dirname, "public");
-
-// Voix ElevenLabs (optionnel). Sans clé, le téléphone utilise sa propre voix.
-const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY || "";
-const ELEVEN_VOICE_AR = process.env.ELEVEN_VOICE_AR || "OfGMGmhShO8iL9jCkXy8"; // Ghizlane, darija marocaine
-const ELEVEN_VOICE_FR = process.env.ELEVEN_VOICE_FR || ELEVEN_VOICE_AR; // voix multilingue : même prof
-const ELEVEN_MODEL = process.env.ELEVEN_MODEL || "eleven_multilingual_v2";
 
 const TOPICS = {
   presentation: "se présenter : bonjour, je m'appelle…, j'habite à…, je viens du Maroc, j'ai … enfants",
@@ -34,45 +32,42 @@ const TOPICS = {
   libre: "conversation libre et simple sur sa journée, sa famille, ce qu'elle aime",
 };
 
-function systemPrompt(topic) {
+function instructions(topic, history) {
   const theme = TOPICS[topic] || TOPICS.libre;
-  return `Tu es Prof Amina, une professeure de français très patiente, chaleureuse et encourageante.
-Ton élève est une femme adulte marocaine. Elle parle uniquement la darija marocaine et débute complètement en français. Elle apprend uniquement à l'oral : tout ce que tu écris sera LU À VOIX HAUTE par le téléphone.
+  let text = `Tu es Amina, une professeure de français marocaine, très patiente, chaleureuse et souriante. Tu parles au téléphone, à voix haute, avec ton élève.
+
+TON ÉLÈVE : une femme adulte marocaine. Elle parle UNIQUEMENT la darija marocaine. Elle débute complètement en français. Elle apprend à l'oral.
+
+LANGUES — RÈGLE LA PLUS IMPORTANTE :
+- Tu parles À ELLE en DARIJA MAROCAINE, avec l'accent marocain : explications, consignes, encouragements, questions.
+- Tu utilises le FRANÇAIS uniquement pour les mots et phrases à apprendre.
+- JAMAIS d'arabe classique (fusha), jamais d'arabe du Moyen-Orient. Utilise les mots marocains : واش، شنو، كيفاش، بغيت، دابا، مزيان، بزاف، عافاك، شوية، صافي، يالاه، زوين.
+- Si elle te parle en darija, réponds-lui en darija.
+- Quand elle progresse bien, tu peux mettre un peu plus de français, mais toujours expliqué en darija.
 
 THÈME DE LA LEÇON : ${theme}
 
-RÈGLES :
-1. Réponses très courtes : 1 à 3 segments maximum. Phrases françaises de 2 à 8 mots.
-2. Une seule nouvelle chose à la fois. Avance doucement, répète souvent.
-3. Schéma habituel : tu dis une phrase en français, tu expliques très brièvement en darija ce qu'elle veut dire, puis tu lui demandes (en darija) de la répéter.
-4. Si elle répond en darija, ne comprend pas, dit « ما فهمتش » ou appuie sur le bouton « je n'ai pas compris » : explique en darija marocaine simple, puis redis la phrase française.
-5. Si elle répète à peu près correctement : félicite-la (par exemple « Bravo ! » ou « مزيان بزاف ») et passe à l'étape suivante. Le texte que tu reçois vient d'une reconnaissance vocale imparfaite : accepte une réponse proche, ne sois jamais sévère.
-6. Petit à petit, pose-lui des questions simples en français pour qu'elle réponde elle-même.
-7. La darija s'écrit en lettres arabes, avec de vrais mots marocains (واش، كيفاش، بغيت، دابا، مزيان، عافاك، شنو، فين). JAMAIS d'arabe classique littéraire.
-8. Pas d'emoji, pas de markdown, pas de transcription phonétique, pas de parenthèses : seulement des phrases à dire.
+MÉTHODE :
+1. Tours de parole TRÈS COURTS : 1 ou 2 phrases, puis tu te tais et tu la laisses parler.
+2. Pour chaque phrase française : dis en darija ce qu'elle veut dire, puis dis la phrase française LENTEMENT et clairement, puis demande-lui en darija de la répéter (« عاودي معايا »).
+3. Une seule nouvelle chose à la fois. Répète souvent ce qu'elle a déjà appris.
+4. Quand elle répète : si c'est à peu près bien, félicite-la chaleureusement (« مزيان بزاف! Bravo! ») et passe à la suite. Si ce n'est pas encore ça, corrige UN seul son, gentiment, et redis le mot lentement.
+5. Si elle ne comprend pas, dit « ما فهمتش » ou hésite : réexplique plus simplement en darija, puis redis le français encore plus lentement.
+6. Petit à petit, pose-lui des questions simples en français (« Comment tu t'appelles ? ») et aide-la à répondre.
+7. Si elle te demande autre chose (traduire un mot, une aide pour un papier), aide-la en darija, puis reviens doucement à la leçon.
+8. Ne sois jamais sévère. Elle doit se sentir en confiance et avoir envie de revenir.
 
-FORMAT DE RÉPONSE : uniquement ce JSON, rien d'autre :
-{"segments":[{"lang":"fr","text":"..."},{"lang":"ar","text":"..."}]}
-"lang" vaut "fr" pour le français et "ar" pour la darija. Ne mélange jamais les deux langues dans un même segment.`;
-}
+DÉBUT : salue-la chaleureusement en darija, présente-toi (« أنا أمينة، الأستاذة ديالك ديال الفرنسية »), explique en une phrase comment on va travailler, puis commence le thème.`;
 
-const hasArabic = (s) => /[؀-ۿ]/.test(s);
-
-function parseSegments(content) {
-  try {
-    const m = content.match(/\{[\s\S]*\}/);
-    const obj = JSON.parse(m ? m[0] : content);
-    const segs = (obj.segments || [])
-      .filter((s) => s && typeof s.text === "string" && s.text.trim())
-      .map((s) => ({ lang: s.lang === "ar" || hasArabic(s.text) ? "ar" : "fr", text: s.text.trim() }));
-    if (segs.length) return segs;
-  } catch (_) {}
-  // Secours : une ligne = un segment, langue devinée
-  return content
-    .split(/\n+/)
-    .map((t) => t.trim())
-    .filter(Boolean)
-    .map((t) => ({ lang: hasArabic(t) ? "ar" : "fr", text: t }));
+  if (Array.isArray(history) && history.length) {
+    const lines = history
+      .slice(-20)
+      .filter((h) => h && typeof h.text === "string")
+      .map((h) => `${h.role === "user" ? "Élève" : "Amina"} : ${h.text.slice(0, 300)}`)
+      .join("\n");
+    text += `\n\nVOUS AVEZ DÉJÀ TRAVAILLÉ ENSEMBLE SUR CE THÈME. Fin de la dernière séance :\n${lines}\n\nCommence par la saluer, rappelle en darija ce qu'elle a appris la dernière fois, fais-lui répéter une phrase pour réviser, puis continue.`;
+  }
+  return text;
 }
 
 function send(res, status, obj) {
@@ -80,14 +75,14 @@ function send(res, status, obj) {
   res.end(JSON.stringify(obj));
 }
 
-function readBody(req, limit = 15 * 1024 * 1024) {
+function readBody(req, limit = 256 * 1024) {
   return new Promise((resolve, reject) => {
     const chunks = [];
     let size = 0;
     req.on("data", (c) => {
       size += c.length;
       if (size > limit) {
-        reject(new Error("Fichier trop gros"));
+        reject(new Error("Requête trop grosse"));
         req.destroy();
       } else chunks.push(c);
     });
@@ -96,65 +91,34 @@ function readBody(req, limit = 15 * 1024 * 1024) {
   });
 }
 
-async function transcribe(audioBuf, mime) {
-  const ext = mime.includes("mp4") ? "mp4" : mime.includes("ogg") ? "ogg" : "webm";
-  const form = new FormData();
-  form.append("file", new Blob([audioBuf], { type: mime }), `audio.${ext}`);
-  form.append("model", STT_MODEL);
-  form.append("temperature", "0");
-  form.append("response_format", "json");
-  // Indice pour Whisper : conversation mélangeant darija et français
-  form.append("prompt", "Bonjour, je m'appelle Fatima. السلام، ما فهمتش، عافاك عاود. Merci, au revoir.");
-  const r = await fetch(`${GROQ_BASE_URL}/audio/transcriptions`, {
-    method: "POST",
-    headers: { Authorization: `Bearer ${GROQ_API_KEY}` },
-    body: form,
-  });
-  if (!r.ok) throw new Error(`Transcription ${r.status}: ${(await r.text()).slice(0, 300)}`);
-  const data = await r.json();
-  return (data.text || "").trim();
-}
-
-async function chat(messages, topic) {
+async function createRealtimeSecret(topic, history) {
   const body = {
-    model: GROQ_MODEL,
-    messages: [{ role: "system", content: systemPrompt(topic) }, ...messages],
-    temperature: 0.6,
-    max_completion_tokens: 600,
-    response_format: { type: "json_object" },
+    expires_after: { anchor: "created_at", seconds: 600 },
+    session: {
+      type: "realtime",
+      model: REALTIME_MODEL,
+      instructions: instructions(topic, history),
+      audio: {
+        input: {
+          // Détection automatique de fin de parole, patiente pour une débutante
+          turn_detection: { type: "semantic_vad", eagerness: "low" },
+          // Transcription de ce qu'elle dit (pour l'affichage à l'écran)
+          transcription: { model: "whisper-1" },
+          noise_reduction: { type: "near_field" },
+        },
+        output: { voice: REALTIME_VOICE },
+      },
+    },
   };
-  if (GROQ_MODEL.startsWith("openai/gpt-oss")) body.reasoning_effort = "low";
-  const r = await fetch(`${GROQ_BASE_URL}/chat/completions`, {
+  const r = await fetch(`${OPENAI_BASE_URL}/realtime/client_secrets`, {
     method: "POST",
-    headers: { Authorization: `Bearer ${GROQ_API_KEY}`, "Content-Type": "application/json" },
+    headers: { Authorization: `Bearer ${OPENAI_API_KEY}`, "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
-  if (!r.ok) throw new Error(`IA ${r.status}: ${(await r.text()).slice(0, 300)}`);
-  const data = await r.json();
-  return parseSegments(data.choices?.[0]?.message?.content || "");
-}
-
-async function tts(text, lang) {
-  const voice = lang === "ar" ? ELEVEN_VOICE_AR : ELEVEN_VOICE_FR;
-  const r = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voice}?output_format=mp3_44100_64`, {
-    method: "POST",
-    headers: { "xi-api-key": ELEVENLABS_API_KEY, "Content-Type": "application/json", Accept: "audio/mpeg" },
-    body: JSON.stringify({
-      text,
-      model_id: ELEVEN_MODEL,
-      voice_settings: { stability: 0.6, similarity_boost: 0.8, speed: lang === "fr" ? 0.85 : 0.95 },
-    }),
-  });
-  if (!r.ok) throw new Error(`Voix ${r.status}: ${(await r.text()).slice(0, 300)}`);
-  return Buffer.from(await r.arrayBuffer());
-}
-
-function cleanMessages(list) {
-  if (!Array.isArray(list)) return [];
-  return list
-    .filter((m) => m && (m.role === "user" || m.role === "assistant") && typeof m.content === "string")
-    .slice(-24)
-    .map((m) => ({ role: m.role, content: m.content.slice(0, 2000) }));
+  const text = await r.text();
+  if (!r.ok) throw new Error(`OpenAI ${r.status}: ${text.slice(0, 400)}`);
+  const data = JSON.parse(text);
+  return data.value || data.client_secret?.value;
 }
 
 const MIME = {
@@ -186,31 +150,19 @@ const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, "http://x");
   if (!url.pathname.startsWith("/api/")) return serveStatic(req, res);
 
-  if (url.pathname === "/api/health") return send(res, 200, { ok: true, model: GROQ_MODEL, keySet: !!GROQ_API_KEY });
+  if (url.pathname === "/api/health")
+    return send(res, 200, { ok: true, mode: "realtime", model: REALTIME_MODEL, voice: REALTIME_VOICE, keySet: !!OPENAI_API_KEY });
 
   if (ACCESS_CODE && req.headers["x-access-code"] !== ACCESS_CODE) return send(res, 401, { error: "code" });
-  if (url.pathname === "/api/check") return send(res, 200, { ok: true, cloudVoice: !!ELEVENLABS_API_KEY });
-  if (!GROQ_API_KEY) return send(res, 500, { error: "GROQ_API_KEY manquante sur le serveur" });
-  if (req.method !== "POST") return send(res, 405, { error: "POST uniquement" });
+  if (url.pathname === "/api/check") return send(res, 200, { ok: true });
+  if (!OPENAI_API_KEY) return send(res, 500, { error: "OPENAI_API_KEY manquante sur le serveur" });
 
   try {
-    if (url.pathname === "/api/transcribe") {
-      const audio = await readBody(req);
-      if (audio.length < 1000) return send(res, 200, { text: "" });
-      const text = await transcribe(audio, req.headers["content-type"] || "audio/webm");
-      return send(res, 200, { text });
-    }
-    if (url.pathname === "/api/chat") {
-      const { messages, topic } = JSON.parse((await readBody(req, 1024 * 1024)).toString("utf8"));
-      const segments = await chat(cleanMessages(messages), topic);
-      return send(res, 200, { segments });
-    }
-    if (url.pathname === "/api/tts") {
-      if (!ELEVENLABS_API_KEY) return send(res, 404, { error: "pas de voix ElevenLabs" });
-      const { text, lang } = JSON.parse((await readBody(req, 64 * 1024)).toString("utf8"));
-      const audio = await tts(String(text || "").slice(0, 600), lang === "ar" ? "ar" : "fr");
-      res.writeHead(200, { "Content-Type": "audio/mpeg", "Content-Length": audio.length });
-      return res.end(audio);
+    if (url.pathname === "/api/session" && req.method === "POST") {
+      const { topic, history } = JSON.parse((await readBody(req)).toString("utf8") || "{}");
+      const value = await createRealtimeSecret(topic, history);
+      if (!value) throw new Error("Pas de clé temporaire reçue");
+      return send(res, 200, { value, model: REALTIME_MODEL });
     }
     send(res, 404, { error: "introuvable" });
   } catch (e) {
@@ -219,4 +171,4 @@ const server = http.createServer(async (req, res) => {
   }
 });
 
-server.listen(PORT, () => console.log(`Prof de français prêt sur le port ${PORT} (modèle ${GROQ_MODEL})`));
+server.listen(PORT, () => console.log(`Prof Amina (temps réel, ${REALTIME_MODEL}) prête sur le port ${PORT}`));

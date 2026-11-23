@@ -10,23 +10,14 @@
 <title>Prof Amina</title>
 <style>
   :root {
-    --bg: #FBF5EC;
-    --card: #FFFFFF;
-    --ink: #2B2420;
-    --muted: #7A6E66;
-    --terracotta: #B5532F;
-    --terracotta-dark: #8E3E21;
-    --saffron: #E8A33D;
-    --teal: #1F6F6B;
-    --teal-light: #E3F0EE;
-    --line: #EADFD2;
-    --red: #D33B2C;
+    --bg: #FBF5EC; --card: #FFFFFF; --ink: #2B2420; --muted: #7A6E66;
+    --terracotta: #B5532F; --terracotta-dark: #8E3E21; --saffron: #E8A33D;
+    --teal: #1F6F6B; --teal-light: #E3F0EE; --line: #EADFD2; --red: #D33B2C;
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body { margin: 0; height: 100%; }
   body {
-    background: var(--bg);
-    color: var(--ink);
+    background: var(--bg); color: var(--ink);
     font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans Arabic", sans-serif;
     display: flex; flex-direction: column;
   }
@@ -44,19 +35,14 @@
   .screen { display: none; flex: 1; flex-direction: column; min-height: 0; }
   .screen.on { display: flex; }
 
-  /* Code d'accès */
   #code { justify-content: center; padding: 28px; gap: 16px; text-align: center; }
   #code input {
     font-size: 30px; text-align: center; padding: 16px; border-radius: 18px;
     border: 2px solid var(--line); background: #fff; letter-spacing: 4px;
   }
-  .btn {
-    font-size: 22px; font-weight: 700; padding: 18px; border: 0; border-radius: 18px;
-    background: var(--teal); color: #fff;
-  }
+  .btn { font-size: 22px; font-weight: 700; padding: 18px; border: 0; border-radius: 18px; background: var(--teal); color: #fff; }
   .err { color: var(--red); min-height: 1.4em; }
 
-  /* Choix du thème */
   #topics { overflow-y: auto; padding: 18px; }
   .hello { text-align: center; margin: 6px 0 18px; }
   .hello .fr { font-size: 24px; font-weight: 700; }
@@ -75,64 +61,56 @@
 
   /* Conversation */
   #talk { min-height: 0; }
-  #log { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
-  .bubble {
-    max-width: 88%; padding: 12px 16px; border-radius: 20px; font-size: 20px; line-height: 1.4;
-    white-space: pre-wrap;
+  .stage { display: flex; flex-direction: column; align-items: center; padding: 22px 18px 8px; gap: 14px; }
+  .orb {
+    width: 168px; height: 168px; border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #F3C27A, var(--saffron) 45%, var(--terracotta) 100%);
+    display: flex; align-items: center; justify-content: center; font-size: 64px;
+    box-shadow: 0 10px 30px rgba(181,83,47,.25);
+    transition: transform .25s ease;
   }
+  .orb.idle { filter: grayscale(.85); opacity: .6; }
+  .orb.connecting { animation: breathe 1.6s ease-in-out infinite; filter: grayscale(.4); }
+  .orb.listening { animation: listen 1.4s ease-in-out infinite; }
+  .orb.speaking { animation: talk .5s ease-in-out infinite alternate; }
+  .orb.user { background: radial-gradient(circle at 35% 30%, #7FC4BE, var(--teal) 70%); animation: listen .8s ease-in-out infinite; }
+  @keyframes breathe { 50% { transform: scale(.92); } }
+  @keyframes listen { 0%,100% { box-shadow: 0 0 0 0 rgba(31,111,107,.35); } 50% { box-shadow: 0 0 0 22px rgba(31,111,107,0); } }
+  @keyframes talk { from { transform: scale(1); } to { transform: scale(1.08); } }
+  #status { font-size: 20px; text-align: center; min-height: 3em; }
+  #status .ar { display: block; font-size: 22px; color: var(--terracotta-dark); }
+
+  #log { flex: 1; overflow-y: auto; padding: 8px 16px 16px; display: flex; flex-direction: column; gap: 10px; }
+  .bubble { max-width: 88%; padding: 10px 14px; border-radius: 18px; font-size: 18px; line-height: 1.45; white-space: pre-wrap; }
   .me { align-self: flex-end; background: var(--teal); color: #fff; border-bottom-right-radius: 6px; }
   .prof { align-self: flex-start; background: var(--card); border: 1px solid var(--line); border-bottom-left-radius: 6px; }
-  .prof .seg { display: block; }
-  .prof .seg.ar { color: var(--terracotta-dark); font-size: 22px; text-align: right; }
-  .prof .seg + .seg { margin-top: 6px; }
-  .controls {
-    padding: 12px 18px calc(18px + env(safe-area-inset-bottom));
-    display: flex; flex-direction: column; align-items: center; gap: 12px;
-    background: linear-gradient(transparent, var(--bg) 25%);
+
+  .controls { padding: 12px 18px calc(18px + env(safe-area-inset-bottom)); display: flex; justify-content: center; }
+  #callBtn {
+    min-width: 260px; padding: 22px 28px; border: 0; border-radius: 999px;
+    font-size: 22px; font-weight: 800; color: #fff; background: var(--teal);
+    box-shadow: 0 8px 22px rgba(31,111,107,.3);
   }
-  #status { font-size: 19px; color: var(--muted); text-align: center; min-height: 2.6em; }
-  #status .ar { display: block; font-size: 21px; }
-  .row { display: flex; align-items: center; justify-content: center; gap: 22px; width: 100%; }
-  .side {
-    width: 82px; height: 82px; border-radius: 50%; border: 2px solid var(--line); background: #fff;
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    font-size: 30px; color: var(--ink); padding: 0;
-  }
-  .side small { font-size: 13px; color: var(--muted); }
-  .side:disabled { opacity: .4; }
-  #mic {
-    width: 132px; height: 132px; border-radius: 50%; border: 0;
-    background: var(--terracotta); color: #fff; font-size: 58px;
-    box-shadow: 0 8px 24px rgba(181,83,47,.35);
-    position: relative;
-  }
-  #mic:disabled { background: #C9B8AA; box-shadow: none; }
-  #mic.rec { background: var(--red); animation: pulse 1.2s infinite; }
-  #mic.busy::after {
-    content: ""; position: absolute; inset: -8px; border-radius: 50%;
-    border: 5px solid transparent; border-top-color: var(--saffron); animation: spin 1s linear infinite;
-  }
-  @keyframes pulse { 0%{box-shadow:0 0 0 0 rgba(211,59,44,.55)} 70%{box-shadow:0 0 0 26px rgba(211,59,44,0)} 100%{box-shadow:0 0 0 0 rgba(211,59,44,0)} }
-  @keyframes spin { to { transform: rotate(360deg); } }
+  #callBtn .ar { display: block; font-size: 22px; font-weight: 700; }
+  #callBtn.hang { background: var(--red); box-shadow: 0 8px 22px rgba(211,59,44,.3); }
+  #callBtn:disabled { opacity: .5; }
 </style>
 </head>
 <body>
 <header>
   <button id="back" aria-label="Retour" style="visibility:hidden">←</button>
   <h1 id="title">Prof Amina</h1>
-  <button id="restart" aria-label="Recommencer la leçon" style="visibility:hidden">↺</button>
+  <button id="restart" aria-label="Recommencer le thème" style="visibility:hidden">↺</button>
 </header>
 
-<!-- Écran 1 : code d'accès (demandé une seule fois) -->
 <section class="screen" id="code">
   <div style="font-size:60px">🔑</div>
-  <div style="font-size:20px">Code d'accès<br><span class="ar" style="font-size:22px">دخل الكود</span></div>
+  <div style="font-size:20px">Code d'accès<br><span class="ar" style="font-size:22px">دخلي الكود</span></div>
   <input id="codeInput" inputmode="numeric" autocomplete="off">
   <button class="btn" id="codeBtn">OK</button>
   <div class="err" id="codeErr"></div>
 </section>
 
-<!-- Écran 2 : choix du thème -->
 <section class="screen" id="topics">
   <div class="hello">
     <div class="fr">Bonjour ! On apprend quoi aujourd'hui ?</div>
@@ -141,18 +119,18 @@
   <div class="grid" id="grid"></div>
 </section>
 
-<!-- Écran 3 : conversation -->
 <section class="screen" id="talk">
+  <div class="stage">
+    <div class="orb idle" id="orb">👩🏽‍🏫</div>
+    <div id="status"></div>
+  </div>
   <div id="log" aria-live="polite"></div>
   <div class="controls">
-    <div id="status"></div>
-    <div class="row">
-      <button class="side" id="again" aria-label="Répéter"><span>🔁</span><small>عاودي</small></button>
-      <button id="mic" aria-label="Parler">🎤</button>
-      <button class="side" id="huh" aria-label="Je n'ai pas compris"><span>❓</span><small>ما فهمتش</small></button>
-    </div>
+    <button id="callBtn"></button>
   </div>
 </section>
+
+<audio id="remote" autoplay playsinline></audio>
 
 <script>
 const TOPICS = [
@@ -164,19 +142,10 @@ const TOPICS = [
   { id: "chiffres", emo: "🔢", fr: "Les chiffres", ar: "الأرقام" },
   { id: "libre", emo: "💬", fr: "Discuter", ar: "نهضرو شوية", wide: true },
 ];
-const START_MSG = "[La leçon commence. Salue-moi chaleureusement et commence doucement.]";
-const HUH_MSG = "ما فهمتش، شرحي ليا بالدارجة عافاك";
+const IDLE_LIMIT_MS = 2 * 60 * 1000; // raccroche tout seul après 2 min sans parole
 
 const $ = (id) => document.getElementById(id);
-const state = {
-  code: localStorage.getItem("code") || "",
-  cloudVoice: false,
-  topic: null,
-  messages: [],
-  lastSegments: [],
-  busy: false,
-  recorder: null,
-};
+const state = { code: localStorage.getItem("code") || "", topic: null, pc: null, dc: null, stream: null, idleTimer: null, live: false };
 
 // ---------- utilitaires ----------
 function show(id) {
@@ -191,189 +160,177 @@ function setStatus(fr, ar) {
   const a = document.createElement("span"); a.textContent = fr; $("status").append(a);
   if (ar) { const b = document.createElement("span"); b.className = "ar"; b.textContent = ar; $("status").append(b); }
 }
-function setBusy(b, label) {
-  state.busy = b;
-  $("mic").disabled = b; $("again").disabled = b || !state.lastSegments.length; $("huh").disabled = b;
-  $("mic").classList.toggle("busy", b);
-  if (label) setStatus(...label);
-  else if (!b) setStatus("Appuie sur le micro et parle", "ورّكي على الميكرو و هضري");
+function setOrb(mode) { $("orb").className = "orb " + mode; }
+function setCallBtn(live, disabled = false) {
+  const b = $("callBtn");
+  b.disabled = disabled;
+  b.classList.toggle("hang", live);
+  b.innerHTML = live
+    ? `📞 Raccrocher<span class="ar">سالينا</span>`
+    : `▶️ Commencer<span class="ar">يالاه نبداو</span>`;
 }
 async function api(path, opts = {}) {
   const r = await fetch(path, { ...opts, headers: { ...(opts.headers || {}), "x-access-code": state.code } });
-  if (r.status === 401) { localStorage.removeItem("code"); state.code = ""; show("code"); throw new Error("code"); }
+  if (r.status === 401) { localStorage.removeItem("code"); state.code = ""; hangUp(); show("code"); throw new Error("code"); }
   if (!r.ok) throw new Error((await r.json().catch(() => ({}))).error || r.status);
   return r;
 }
-function save() {
-  if (state.topic) localStorage.setItem("conv_" + state.topic, JSON.stringify(state.messages.slice(-40)));
-}
 
-// ---------- affichage ----------
-function addMine(text) {
-  const d = document.createElement("div"); d.className = "bubble me"; d.dir = "auto"; d.textContent = text;
+// ---------- historique (gardé sur le téléphone, un par thème) ----------
+const histKey = () => "hist_" + state.topic;
+const loadHist = () => { try { return JSON.parse(localStorage.getItem(histKey()) || "[]"); } catch { return []; } };
+function pushHist(role, text) {
+  const h = loadHist(); h.push({ role, text }); localStorage.setItem(histKey(), JSON.stringify(h.slice(-60)));
+}
+function addBubble(role, text) {
+  if (!text || !text.trim()) return;
+  const d = document.createElement("div");
+  d.className = "bubble " + (role === "user" ? "me" : "prof");
+  d.dir = "auto"; d.textContent = text.trim();
   $("log").append(d); d.scrollIntoView({ behavior: "smooth", block: "end" });
 }
-function addProf(segments) {
-  const d = document.createElement("div"); d.className = "bubble prof";
-  segments.forEach((s) => {
-    const e = document.createElement("span"); e.className = "seg" + (s.lang === "ar" ? " ar" : "");
-    e.textContent = s.text; d.append(e);
-  });
-  $("log").append(d); d.scrollIntoView({ behavior: "smooth", block: "end" });
-}
-function segmentsOf(content) {
-  try { return JSON.parse(content).segments || []; } catch { return [{ lang: "fr", text: content }]; }
+
+// ---------- minuterie d'inactivité ----------
+function bumpIdle() {
+  clearTimeout(state.idleTimer);
+  if (state.live) state.idleTimer = setTimeout(() => {
+    hangUp();
+    setStatus("Pause automatique. Appuie sur Commencer pour continuer.", "وقفنا شوية. ورّكي على يالاه نبداو باش نكملو");
+  }, IDLE_LIMIT_MS);
 }
 
-// ---------- voix ----------
-let voices = [];
-function loadVoices() { voices = speechSynthesis.getVoices(); }
-if ("speechSynthesis" in window) { loadVoices(); speechSynthesis.onvoiceschanged = loadVoices; }
-function pickVoice(lang) {
-  const pref = lang === "ar" ? ["ar-MA", "ar-SA", "ar-EG", "ar"] : ["fr-FR", "fr"];
-  for (const p of pref) {
-    const v = voices.find((v) => v.lang.replace("_", "-").toLowerCase().startsWith(p.toLowerCase()));
-    if (v) return v;
-  }
-  return null;
-}
-function speakDevice(text, lang) {
-  return new Promise((resolve) => {
-    if (!("speechSynthesis" in window)) return resolve();
-    const u = new SpeechSynthesisUtterance(text);
-    u.lang = lang === "ar" ? "ar-SA" : "fr-FR";
-    const v = pickVoice(lang); if (v) u.voice = v;
-    u.rate = lang === "fr" ? 0.8 : 0.95;
-    u.onend = u.onerror = () => resolve();
-    speechSynthesis.speak(u);
-  });
-}
-function playBlob(blob) {
-  return new Promise((resolve) => {
-    const a = new Audio(URL.createObjectURL(blob));
-    a.onended = a.onerror = () => resolve();
-    a.play().catch(() => resolve());
-  });
-}
-async function speakAll(segments) {
-  // Voix ElevenLabs si disponible : on prépare tous les sons en parallèle
-  const cloud = state.cloudVoice
-    ? segments.map((s) =>
-        api("/api/tts", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(s) })
-          .then((r) => r.blob()).catch(() => null))
-    : [];
-  for (let i = 0; i < segments.length; i++) {
-    const blob = state.cloudVoice ? await cloud[i] : null;
-    if (blob) await playBlob(blob);
-    else await speakDevice(segments[i].text, segments[i].lang);
-    await new Promise((r) => setTimeout(r, 250));
-  }
-}
-
-// ---------- conversation ----------
-async function askProf(userText, { hidden = false } = {}) {
-  state.messages.push({ role: "user", content: userText, hidden });
-  if (!hidden) addMine(userText);
-  save();
-  setBusy(true, ["Prof Amina réfléchit…", "الأستاذة كتفكر…"]);
+// ---------- appel en temps réel ----------
+async function startCall() {
+  setCallBtn(true, true);
+  setOrb("connecting");
+  setStatus("Connexion…", "كنتاصلو…");
   try {
-    const r = await api("/api/chat", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ topic: state.topic, messages: state.messages.map(({ role, content }) => ({ role, content })) }),
+    state.stream = await navigator.mediaDevices.getUserMedia({
+      audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
     });
-    const { segments } = await r.json();
-    state.messages.push({ role: "assistant", content: JSON.stringify({ segments }) });
-    save();
-    state.lastSegments = segments;
-    addProf(segments);
-    setBusy(true, ["Écoute bien…", "سمعي مزيان…"]);
-    await speakAll(segments);
-  } catch (e) {
-    if (e.message !== "code") setStatus("Problème de connexion. Réessaie.", "كاين مشكل، عاودي");
-    state.messages.pop(); save();
-    console.error(e);
-    state.busy = false; $("mic").disabled = false; $("mic").classList.remove("busy"); $("huh").disabled = false;
+  } catch {
+    setOrb("idle"); setCallBtn(false);
+    setStatus("Autorise le micro dans les réglages.", "خصك تسمحي للميكرو");
     return;
   }
-  setBusy(false);
+  try {
+    const hist = loadHist();
+    const r = await api("/api/session", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ topic: state.topic, history: hist.slice(-20) }),
+    });
+    const { value } = await r.json();
+
+    const pc = new RTCPeerConnection();
+    state.pc = pc;
+    pc.ontrack = (e) => { $("remote").srcObject = e.streams[0]; };
+    pc.addTrack(state.stream.getTracks()[0], state.stream);
+    pc.onconnectionstatechange = () => {
+      if (["failed", "disconnected"].includes(pc.connectionState) && state.live) {
+        hangUp(); setStatus("La connexion a été coupée. Réessaie.", "تقطع الاتصال، عاودي");
+      }
+    };
+
+    const dc = pc.createDataChannel("oai-events");
+    state.dc = dc;
+    dc.onmessage = (e) => onEvent(JSON.parse(e.data));
+    dc.onopen = () => {
+      state.live = true;
+      setCallBtn(true);
+      setOrb("speaking");
+      setStatus("Amina parle…", "أمينة كتهضر…");
+      // Amina commence la conversation
+      dc.send(JSON.stringify({ type: "response.create" }));
+      bumpIdle();
+    };
+
+    const offer = await pc.createOffer();
+    await pc.setLocalDescription(offer);
+    const sdpRes = await fetch("https://api.openai.com/v1/realtime/calls", {
+      method: "POST",
+      body: offer.sdp,
+      headers: { Authorization: `Bearer ${value}`, "Content-Type": "application/sdp" },
+    });
+    if (!sdpRes.ok) throw new Error("WebRTC " + sdpRes.status + " " + (await sdpRes.text()).slice(0, 200));
+    await pc.setRemoteDescription({ type: "answer", sdp: await sdpRes.text() });
+  } catch (e) {
+    console.error(e);
+    hangUp();
+    if (e.message !== "code") {
+      setStatus("Impossible de se connecter. Réessaie.", "ما قدرناش نتاصلو، عاودي");
+      const s = document.createElement("small");
+      s.style.cssText = "display:block;color:#999;font-size:12px;margin-top:6px;word-break:break-word";
+      s.textContent = String(e.message || e).slice(0, 200);
+      $("status").append(s);
+    }
+  }
 }
 
+function hangUp() {
+  state.live = false;
+  clearTimeout(state.idleTimer);
+  try { state.dc && state.dc.close(); } catch {}
+  try { state.pc && state.pc.close(); } catch {}
+  if (state.stream) state.stream.getTracks().forEach((t) => t.stop());
+  state.pc = state.dc = state.stream = null;
+  $("remote").srcObject = null;
+  setOrb("idle");
+  setCallBtn(false);
+  setStatus("Appuie sur Commencer pour parler avec Amina", "ورّكي على يالاه نبداو باش تهضري مع أمينة");
+}
+
+function onEvent(ev) {
+  switch (ev.type) {
+    case "input_audio_buffer.speech_started":
+      bumpIdle(); setOrb("user"); setStatus("Je t'écoute…", "كنسمعك…");
+      break;
+    case "input_audio_buffer.speech_stopped":
+      setOrb("listening"); setStatus("…", "");
+      break;
+    case "output_audio_buffer.started":
+    case "response.created":
+      bumpIdle(); setOrb("speaking"); setStatus("Amina parle…", "أمينة كتهضر…");
+      break;
+    case "output_audio_buffer.stopped":
+    case "output_audio_buffer.cleared":
+      bumpIdle(); setOrb("listening"); setStatus("À toi ! Parle quand tu veux.", "دابا نتي، هضري");
+      break;
+    case "conversation.item.input_audio_transcription.completed":
+      if (ev.transcript) { addBubble("user", ev.transcript); pushHist("user", ev.transcript); }
+      break;
+    case "response.output_audio_transcript.done":
+    case "response.audio_transcript.done":
+      if (ev.transcript) { addBubble("prof", ev.transcript); pushHist("assistant", ev.transcript); }
+      break;
+    case "error":
+      console.error("Realtime error", ev.error);
+      break;
+  }
+}
+
+// ---------- navigation ----------
 function openTopic(t) {
   state.topic = t.id;
   $("title").textContent = t.emo + " " + t.fr;
   $("log").innerHTML = "";
-  state.lastSegments = [];
-  state.messages = JSON.parse(localStorage.getItem("conv_" + t.id) || "[]");
+  loadHist().slice(-12).forEach((h) => addBubble(h.role, h.text));
   show("talk");
-  for (const m of state.messages) {
-    if (m.role === "assistant") { state.lastSegments = segmentsOf(m.content); addProf(state.lastSegments); }
-    else if (!m.hidden) addMine(m.content);
-  }
-  if (!state.messages.length) askProf(START_MSG, { hidden: true });
-  else { setBusy(false); speakAll(state.lastSegments); }
+  hangUp();
 }
-
-// ---------- micro ----------
-async function startRec() {
-  speechSynthesis.cancel();
-  let stream;
-  try {
-    stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } });
-  } catch {
-    setStatus("Autorise le micro dans les réglages.", "خصك تسمحي للميكرو");
-    return;
-  }
-  const mime = ["audio/webm;codecs=opus", "audio/webm", "audio/mp4", "audio/ogg"].find((m) => MediaRecorder.isTypeSupported(m)) || "";
-  const rec = new MediaRecorder(stream, mime ? { mimeType: mime } : undefined);
-  const chunks = [];
-  rec.ondataavailable = (e) => e.data.size && chunks.push(e.data);
-  rec.onstop = async () => {
-    stream.getTracks().forEach((t) => t.stop());
-    $("mic").classList.remove("rec"); $("mic").textContent = "🎤";
-    const blob = new Blob(chunks, { type: rec.mimeType || "audio/webm" });
-    if (blob.size < 2000) return setBusy(false);
-    setBusy(true, ["J'écoute ce que tu as dit…", "كنسمع شنو قلتي…"]);
-    try {
-      const r = await api("/api/transcribe", { method: "POST", headers: { "Content-Type": blob.type }, body: blob });
-      const { text } = await r.json();
-      if (!text) { setBusy(false); setStatus("Je n'ai rien entendu. Parle plus fort.", "ما سمعت والو، هضري بصوت عالي"); return; }
-      await askProf(text);
-    } catch (e) {
-      console.error(e);
-      setBusy(false); setStatus("Problème de connexion. Réessaie.", "كاين مشكل، عاودي");
-    }
-  };
-  rec.start();
-  state.recorder = rec;
-  $("mic").classList.add("rec"); $("mic").textContent = "⏹";
-  setStatus("Je t'écoute… Appuie encore pour finir", "كنسمعك… ورّكي عاوتاني ملي تساليي");
-  setTimeout(() => rec.state === "recording" && rec.stop(), 30000);
-}
-
-$("mic").onclick = () => {
-  if (state.recorder && state.recorder.state === "recording") state.recorder.stop();
-  else if (!state.busy) startRec();
-};
-$("again").onclick = async () => {
-  if (state.busy || !state.lastSegments.length) return;
-  setBusy(true, ["Écoute bien…", "سمعي مزيان…"]);
-  await speakAll(state.lastSegments);
-  setBusy(false);
-};
-$("huh").onclick = () => { if (!state.busy) askProf(HUH_MSG); };
-$("back").onclick = () => {
-  if (state.recorder && state.recorder.state === "recording") state.recorder.stop();
-  speechSynthesis.cancel(); state.topic = null; show("topics");
-};
+$("callBtn").onclick = () => (state.live || state.pc ? hangUp() : startCall());
+$("back").onclick = () => { hangUp(); state.topic = null; show("topics"); };
 $("restart").onclick = () => {
-  if (state.busy) return;
-  const t = TOPICS.find((x) => x.id === state.topic);
-  localStorage.removeItem("conv_" + state.topic);
-  openTopic(t);
+  hangUp();
+  localStorage.removeItem(histKey());
+  $("log").innerHTML = "";
+  setStatus("Leçon remise à zéro. Appuie sur Commencer.", "بدينا من الأول. ورّكي على يالاه نبداو");
 };
+document.addEventListener("visibilitychange", () => {
+  // Si l'application passe en arrière-plan longtemps, la minuterie coupera l'appel
+  if (document.visibilityState === "hidden") bumpIdle();
+});
 
-// ---------- démarrage ----------
 function buildTopics() {
   TOPICS.forEach((t) => {
     const b = document.createElement("button");
@@ -386,22 +343,18 @@ function buildTopics() {
   });
 }
 async function checkCode() {
-  try {
-    const r = await api("/api/check");
-    state.cloudVoice = !!(await r.json()).cloudVoice;
-    show("topics");
-  } catch (e) {
-    if (e.message !== "code") { show("topics"); }
-  }
+  try { await api("/api/check"); show("topics"); }
+  catch (e) { if (e.message !== "code") show("topics"); }
 }
 $("codeBtn").onclick = async () => {
   state.code = $("codeInput").value.trim();
   localStorage.setItem("code", state.code);
   $("codeErr").textContent = "";
   await checkCode();
-  if (!state.code || $("code").classList.contains("on")) $("codeErr").textContent = "Code incorrect";
+  if ($("code").classList.contains("on")) $("codeErr").textContent = "Code incorrect";
 };
 buildTopics();
+setCallBtn(false);
 checkCode();
 </script>
 </body>
