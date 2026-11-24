@@ -7,7 +7,7 @@
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/icon-192.png">
 <link rel="apple-touch-icon" href="/icon-192.png">
-<title>Prof Amina</title>
+<title>Amina</title>
 <style>
   :root {
     --bg: #FBF5EC; --card: #FFFFFF; --ink: #2B2420; --muted: #7A6E66;
@@ -24,7 +24,7 @@
   .ar { font-family: "Noto Naskh Arabic", "Noto Sans Arabic", system-ui, sans-serif; direction: rtl; }
   header {
     display: flex; align-items: center; gap: 12px;
-    padding: calc(14px + env(safe-area-inset-top)) 18px 14px;
+    padding: calc(12px + env(safe-area-inset-top)) 16px 12px;
     background: var(--terracotta); color: #fff;
   }
   header h1 { font-size: 22px; margin: 0; flex: 1; font-weight: 700; }
@@ -34,75 +34,94 @@
   }
   .screen { display: none; flex: 1; flex-direction: column; min-height: 0; }
   .screen.on { display: flex; }
-
-  #code { justify-content: center; padding: 28px; gap: 16px; text-align: center; }
-  #code input {
-    font-size: 30px; text-align: center; padding: 16px; border-radius: 18px;
-    border: 2px solid var(--line); background: #fff; letter-spacing: 4px;
-  }
   .btn { font-size: 22px; font-weight: 700; padding: 18px; border: 0; border-radius: 18px; background: var(--teal); color: #fff; }
+
+  /* code */
+  #code { justify-content: center; padding: 28px; gap: 16px; text-align: center; }
+  #code input { font-size: 30px; text-align: center; padding: 16px; border-radius: 18px; border: 2px solid var(--line); background: #fff; letter-spacing: 4px; }
   .err { color: var(--red); min-height: 1.4em; }
 
-  #topics { overflow-y: auto; padding: 18px; }
-  .hello { text-align: center; margin: 6px 0 18px; }
-  .hello .fr { font-size: 24px; font-weight: 700; }
-  .hello .ar { font-size: 26px; color: var(--terracotta-dark); margin-top: 4px; }
-  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  /* accueil */
+  #home { overflow-y: auto; padding: 16px 18px 28px; }
+  .hero { display: flex; flex-direction: column; align-items: center; gap: 8px; margin-bottom: 18px; text-align: center; }
+  .hero .face-wrap { width: 170px; height: 170px; }
+  .hero .ar { font-size: 24px; color: var(--terracotta-dark); }
+  .hero .fr { font-size: 18px; color: var(--muted); }
+  #friendBtn {
+    width: 100%; padding: 20px; border: 0; border-radius: 24px; background: var(--teal); color: #fff;
+    font-size: 22px; font-weight: 800; box-shadow: 0 8px 22px rgba(31,111,107,.28);
+  }
+  #friendBtn .ar { display: block; font-size: 24px; font-weight: 700; margin-top: 2px; }
+  h2 { font-size: 18px; margin: 24px 4px 12px; color: var(--muted); font-weight: 700; }
+  h2 .ar { font-size: 20px; margin-right: 8px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
   .topic {
-    background: var(--card); border: 2px solid var(--line); border-radius: 22px;
-    padding: 16px 10px; display: flex; flex-direction: column; align-items: center; gap: 6px;
-    font: inherit; color: inherit; min-height: 150px; justify-content: center;
+    background: var(--card); border: 2px solid var(--line); border-radius: 18px;
+    padding: 12px 6px; display: flex; flex-direction: column; align-items: center; gap: 4px;
+    font: inherit; color: inherit; min-height: 112px; justify-content: center;
   }
   .topic:active { transform: scale(.97); background: var(--teal-light); }
-  .topic .emo { font-size: 46px; line-height: 1; }
-  .topic .fr { font-size: 18px; font-weight: 700; }
-  .topic .ar { font-size: 20px; color: var(--muted); }
-  .topic.wide { grid-column: 1 / -1; min-height: 110px; }
+  .topic .emo { font-size: 34px; line-height: 1; }
+  .topic .fr { font-size: 14px; font-weight: 700; }
+  .topic .ar { font-size: 16px; color: var(--muted); }
 
-  /* Conversation */
-  #talk { min-height: 0; }
-  .stage { display: flex; flex-direction: column; align-items: center; padding: 22px 18px 8px; gap: 14px; }
-  .orb {
-    width: 168px; height: 168px; border-radius: 50%;
-    background: radial-gradient(circle at 35% 30%, #F3C27A, var(--saffron) 45%, var(--terracotta) 100%);
-    display: flex; align-items: center; justify-content: center; font-size: 64px;
-    box-shadow: 0 10px 30px rgba(181,83,47,.25);
-    transition: transform .25s ease;
+  /* conversation */
+  #talk { min-height: 0; align-items: center; }
+  .stage { flex: 1; min-height: 0; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 8px 16px; gap: 10px; }
+  #talk .face-wrap { width: min(78vw, 46vh, 380px); aspect-ratio: 1; position: relative; }
+  .face-wrap svg { width: 100%; height: 100%; display: block; }
+  .ring { position: absolute; inset: -6px; border-radius: 50%; border: 5px solid transparent; transition: border-color .3s; }
+  .ring.user { border-color: rgba(31,111,107,.55); animation: pulse 1.1s ease-in-out infinite; }
+  .ring.speaking { border-color: rgba(232,163,61,.55); }
+  .ring.connecting { border-top-color: var(--saffron); animation: spin 1s linear infinite; }
+  @keyframes pulse { 50% { transform: scale(1.03); } }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .bubble-search {
+    position: absolute; right: -6px; top: 6%; background: #fff; border: 2px solid var(--line);
+    border-radius: 18px; padding: 6px 10px; font-size: 26px; display: none; animation: bob 1s ease-in-out infinite;
   }
-  .orb.idle { filter: grayscale(.85); opacity: .6; }
-  .orb.connecting { animation: breathe 1.6s ease-in-out infinite; filter: grayscale(.4); }
-  .orb.listening { animation: listen 1.4s ease-in-out infinite; }
-  .orb.speaking { animation: talk .5s ease-in-out infinite alternate; }
-  .orb.user { background: radial-gradient(circle at 35% 30%, #7FC4BE, var(--teal) 70%); animation: listen .8s ease-in-out infinite; }
-  @keyframes breathe { 50% { transform: scale(.92); } }
-  @keyframes listen { 0%,100% { box-shadow: 0 0 0 0 rgba(31,111,107,.35); } 50% { box-shadow: 0 0 0 22px rgba(31,111,107,0); } }
-  @keyframes talk { from { transform: scale(1); } to { transform: scale(1.08); } }
-  #status { font-size: 20px; text-align: center; min-height: 3em; }
-  #status .ar { display: block; font-size: 22px; color: var(--terracotta-dark); }
-
-  #log { flex: 1; overflow-y: auto; padding: 8px 16px 16px; display: flex; flex-direction: column; gap: 10px; }
-  .bubble { max-width: 88%; padding: 10px 14px; border-radius: 18px; font-size: 18px; line-height: 1.45; white-space: pre-wrap; }
-  .me { align-self: flex-end; background: var(--teal); color: #fff; border-bottom-right-radius: 6px; }
-  .prof { align-self: flex-start; background: var(--card); border: 1px solid var(--line); border-bottom-left-radius: 6px; }
-
-  .controls { padding: 12px 18px calc(18px + env(safe-area-inset-bottom)); display: flex; justify-content: center; }
+  .bubble-search.on { display: block; }
+  @keyframes bob { 50% { transform: translateY(-5px); } }
+  #status { font-size: 18px; text-align: center; min-height: 2.6em; color: var(--muted); }
+  #status .ar { display: block; font-size: 21px; color: var(--terracotta-dark); }
+  #subtitle {
+    width: 100%; max-width: 520px; min-height: 3.2em; max-height: 7.5em; overflow-y: auto;
+    background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 10px 14px;
+    font-size: 19px; line-height: 1.45; text-align: center; white-space: pre-wrap;
+  }
+  #subtitle:empty { visibility: hidden; }
+  #sources { width: 100%; max-width: 520px; display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
+  #sources a {
+    font-size: 13px; color: var(--teal); background: var(--teal-light); border-radius: 999px; padding: 5px 10px;
+    text-decoration: none; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .controls { padding: 10px 18px calc(16px + env(safe-area-inset-bottom)); display: flex; justify-content: center; width: 100%; }
   #callBtn {
-    min-width: 260px; padding: 22px 28px; border: 0; border-radius: 999px;
+    min-width: 260px; padding: 20px 28px; border: 0; border-radius: 999px;
     font-size: 22px; font-weight: 800; color: #fff; background: var(--teal);
     box-shadow: 0 8px 22px rgba(31,111,107,.3);
   }
   #callBtn .ar { display: block; font-size: 22px; font-weight: 700; }
   #callBtn.hang { background: var(--red); box-shadow: 0 8px 22px rgba(211,59,44,.3); }
   #callBtn:disabled { opacity: .5; }
+
+  /* mémoire */
+  #memory { overflow-y: auto; padding: 18px; gap: 10px; }
+  #memory .intro { font-size: 17px; color: var(--muted); }
+  .fact { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 10px 14px; font-size: 17px; }
+  .fact small { color: var(--muted); display: block; margin-top: 2px; }
+  #wipeBtn { margin-top: 18px; background: #fff; color: var(--red); border: 2px solid var(--red); }
+  #wipeBtn.armed { background: var(--red); color: #fff; }
 </style>
 </head>
 <body>
 <header>
   <button id="back" aria-label="Retour" style="visibility:hidden">←</button>
-  <h1 id="title">Prof Amina</h1>
-  <button id="restart" aria-label="Recommencer le thème" style="visibility:hidden">↺</button>
+  <h1 id="title">Amina</h1>
+  <button id="memBtn" aria-label="Ce qu'Amina sait de moi">🧠</button>
 </header>
 
+<!-- code d'accès -->
 <section class="screen" id="code">
   <div style="font-size:60px">🔑</div>
   <div style="font-size:20px">Code d'accès<br><span class="ar" style="font-size:22px">دخلي الكود</span></div>
@@ -111,28 +130,181 @@
   <div class="err" id="codeErr"></div>
 </section>
 
-<section class="screen" id="topics">
-  <div class="hello">
-    <div class="fr">Bonjour ! On apprend quoi aujourd'hui ?</div>
-    <div class="ar">السلام! شنو بغيتي تتعلمي اليوم؟</div>
+<!-- accueil -->
+<section class="screen" id="home">
+  <div class="hero">
+    <div class="face-wrap" id="homeFace"></div>
+    <div class="fr" style="font-size:22px;color:var(--ink);font-weight:700">Bonjour ! Je suis Amina, ton amie.</div>
+    <div class="ar">السلام! أنا أمينة، صاحبتك</div>
   </div>
+  <button id="friendBtn">💬 Parler avec Amina<span class="ar">هضري مع أمينة</span></button>
+  <h2><span class="ar">دروس الفرنسية</span>Leçons de français</h2>
   <div class="grid" id="grid"></div>
 </section>
 
+<!-- conversation -->
 <section class="screen" id="talk">
   <div class="stage">
-    <div class="orb idle" id="orb">👩🏽‍🏫</div>
+    <div class="face-wrap" id="talkFace"><div class="ring" id="ring"></div><div class="bubble-search" id="searchBubble">🔎</div></div>
     <div id="status"></div>
+    <div id="subtitle" dir="auto"></div>
+    <div id="sources"></div>
   </div>
-  <div id="log" aria-live="polite"></div>
-  <div class="controls">
-    <button id="callBtn"></button>
-  </div>
+  <div class="controls"><button id="callBtn"></button></div>
+</section>
+
+<!-- mémoire -->
+<section class="screen" id="memory">
+  <div class="intro">Ce qu'Amina a retenu. <span class="ar">شنو عقلات عليه أمينة</span></div>
+  <div id="factList"></div>
+  <button class="btn" id="wipeBtn">Tout oublier</button>
 </section>
 
 <audio id="remote" autoplay playsinline></audio>
 
 <script>
+// ===================================================================== avatar
+// Visage original d'Amina, dessiné en SVG. La bouche suit le volume de sa voix.
+const FACE_SVG = `
+<svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg" aria-label="Amina">
+  <defs>
+    <radialGradient id="bgG" cx="50%" cy="42%" r="60%"><stop offset="0" stop-color="#FCE7C8"/><stop offset="1" stop-color="#F2C58C"/></radialGradient>
+    <clipPath id="circ"><circle cx="200" cy="200" r="196"/></clipPath>
+  </defs>
+  <g clip-path="url(#circ)">
+    <circle cx="200" cy="200" r="196" fill="url(#bgG)"/>
+    <g class="body">
+      <path d="M70 420 C80 330 130 300 200 300 C270 300 320 330 330 420 Z" fill="#B5532F"/>
+      <path d="M160 302 L200 352 L240 302" fill="none" stroke="#E8A33D" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M200 352 L200 420" stroke="#E8A33D" stroke-width="5" stroke-dasharray="2 10" stroke-linecap="round"/>
+      <rect x="178" y="262" width="44" height="46" rx="16" fill="#B97A55"/>
+    </g>
+    <g class="head">
+      <path d="M96 210 C86 110 150 58 204 60 C262 62 318 112 304 214 C300 250 316 282 300 300 C280 270 280 230 280 200 L122 200 C122 232 122 270 102 300 C86 280 100 250 96 210 Z" fill="#2A1B14"/>
+      <ellipse cx="200" cy="190" rx="86" ry="100" fill="#C88A62"/>
+      <ellipse cx="114" cy="196" rx="13" ry="20" fill="#BE7F58"/>
+      <ellipse cx="286" cy="196" rx="13" ry="20" fill="#BE7F58"/>
+      <circle cx="113" cy="222" r="5" fill="#E8A33D"/><circle cx="287" cy="222" r="5" fill="#E8A33D"/>
+      <path d="M112 160 C120 96 170 82 206 84 C246 86 284 104 290 160 C262 122 226 112 198 116 C168 120 140 132 112 160 Z" fill="#2A1B14"/>
+      <g class="brows">
+        <path class="brow-l" d="M146 150 Q166 140 184 148" fill="none" stroke="#2A1B14" stroke-width="6" stroke-linecap="round"/>
+        <path class="brow-r" d="M216 148 Q234 140 254 150" fill="none" stroke="#2A1B14" stroke-width="6" stroke-linecap="round"/>
+      </g>
+      <g class="eye eye-l" transform-origin="166 174">
+        <ellipse cx="166" cy="174" rx="17" ry="12" fill="#FFFDF8"/>
+        <g class="iris"><circle cx="166" cy="175" r="8.5" fill="#4A2E1F"/><circle cx="166" cy="175" r="4" fill="#1C110B"/><circle cx="169" cy="172" r="2.4" fill="#fff"/></g>
+        <path d="M148 172 Q166 158 184 172" fill="none" stroke="#2A1B14" stroke-width="3.5" stroke-linecap="round"/>
+      </g>
+      <g class="eye eye-r" transform-origin="234 174">
+        <ellipse cx="234" cy="174" rx="17" ry="12" fill="#FFFDF8"/>
+        <g class="iris"><circle cx="234" cy="175" r="8.5" fill="#4A2E1F"/><circle cx="234" cy="175" r="4" fill="#1C110B"/><circle cx="237" cy="172" r="2.4" fill="#fff"/></g>
+        <path d="M216 172 Q234 158 252 172" fill="none" stroke="#2A1B14" stroke-width="3.5" stroke-linecap="round"/>
+      </g>
+      <path d="M200 182 Q196 206 190 214 Q200 220 210 214" fill="none" stroke="#9E6542" stroke-width="3.5" stroke-linecap="round"/>
+      <ellipse cx="148" cy="218" rx="18" ry="10" fill="#E07A5F" opacity=".22"/>
+      <ellipse cx="252" cy="218" rx="18" ry="10" fill="#E07A5F" opacity=".22"/>
+      <g class="mouth" transform-origin="200 240">
+        <ellipse class="mouth-in" cx="200" cy="242" rx="22" ry="3" fill="#5B2318"/>
+        <ellipse class="tongue" cx="200" cy="248" rx="11" ry="0" fill="#D9776B"/>
+        <path class="lip-top" d="M176 240 Q188 232 200 236 Q212 232 224 240" fill="none" stroke="#A24A3B" stroke-width="4.5" stroke-linecap="round"/>
+        <path class="lip-bot" d="M178 242 Q200 256 222 242" fill="none" stroke="#A24A3B" stroke-width="4.5" stroke-linecap="round"/>
+      </g>
+    </g>
+  </g>
+</svg>`;
+
+let faceCount = 0;
+function makeFace(container) {
+  // identifiants uniques par visage (sinon le 2e visage perd son fond rond)
+  const n = ++faceCount;
+  container.insertAdjacentHTML("beforeend", FACE_SVG.replace(/bgG/g, "bgG" + n).replace(/circ\b/g, "circ" + n));
+  const svg = container.querySelector("svg");
+  return {
+    svg,
+    head: svg.querySelector(".head"),
+    body: svg.querySelector(".body"),
+    eyes: [...svg.querySelectorAll(".eye")],
+    irises: [...svg.querySelectorAll(".iris")],
+    brows: svg.querySelector(".brows"),
+    mouthIn: svg.querySelector(".mouth-in"),
+    tongue: svg.querySelector(".tongue"),
+    lipBot: svg.querySelector(".lip-bot"),
+  };
+}
+
+const faces = [];
+const anim = { out: 0, mic: 0, mode: "idle", nextBlink: performance.now() + 2500, blinkUntil: 0, look: { x: 0, y: 0 } };
+
+function drawFace(f, t) {
+  const open = Math.min(1, anim.out * 1.15);
+  const speaking = anim.mode === "speaking" || open > 0.05;
+  const listening = anim.mode === "user";
+  const thinking = anim.mode === "thinking";
+
+  // tête : respiration, balancement quand elle parle, inclinaison quand elle écoute
+  const breathe = Math.sin(t / 900) * 2;
+  const sway = speaking ? Math.sin(t / 380) * 2.2 + open * 1.5 : 0;
+  const tilt = listening ? 4 : thinking ? -3 : 0;
+  f.head.setAttribute("transform", `translate(0 ${breathe.toFixed(2)}) rotate(${(tilt + sway).toFixed(2)} 200 260)`);
+  f.body.setAttribute("transform", `translate(0 ${(breathe * 0.4).toFixed(2)})`);
+
+  // clignement
+  const blinking = t < anim.blinkUntil;
+  f.eyes.forEach((e) => e.setAttribute("transform", blinking ? "scale(1 0.08)" : "scale(1 1)"));
+
+  // regard : vers le haut quand elle cherche, sinon petits mouvements
+  const lx = thinking ? 5 : anim.look.x, ly = thinking ? -5 : anim.look.y;
+  f.irises.forEach((i) => i.setAttribute("transform", `translate(${lx.toFixed(1)} ${ly.toFixed(1)})`));
+
+  // sourcils : levés quand elle écoute, froncés en réflexion
+  const by = listening ? -5 - anim.mic * 4 : thinking ? 2 : speaking ? -open * 3 : 0;
+  f.brows.setAttribute("transform", `translate(0 ${by.toFixed(2)})`);
+
+  // bouche
+  const ry = 3 + open * 17;
+  const rx = 22 - open * 5 + (speaking ? Math.sin(t / 90) * 1.2 : 0);
+  f.mouthIn.setAttribute("ry", ry.toFixed(2));
+  f.mouthIn.setAttribute("rx", rx.toFixed(2));
+  f.mouthIn.setAttribute("cy", (242 + open * 6).toFixed(2));
+  f.tongue.setAttribute("ry", (open * 5).toFixed(2));
+  f.tongue.setAttribute("cy", (248 + open * 10).toFixed(2));
+  const low = 256 + open * 22;
+  f.lipBot.setAttribute("d", `M178 ${242 + open * 4} Q200 ${low.toFixed(1)} 222 ${242 + open * 4}`);
+}
+
+function loop(t) {
+  if (t > anim.nextBlink) { anim.blinkUntil = t + 130; anim.nextBlink = t + 2200 + Math.random() * 3800; }
+  if (Math.random() < 0.01) anim.look = { x: (Math.random() - 0.5) * 4, y: (Math.random() - 0.5) * 2 };
+  readLevels();
+  faces.forEach((f) => drawFace(f, t));
+  requestAnimationFrame(loop);
+}
+
+// ===================================================================== niveaux audio
+let audioCtx = null, outAn = null, micAn = null;
+const buf = new Uint8Array(1024);
+function rms(an) {
+  an.getByteTimeDomainData(buf);
+  let s = 0;
+  for (let i = 0; i < buf.length; i++) { const v = (buf[i] - 128) / 128; s += v * v; }
+  return Math.sqrt(s / buf.length);
+}
+function readLevels() {
+  const o = outAn ? Math.min(1, rms(outAn) * 6) : 0;
+  const m = micAn ? Math.min(1, rms(micAn) * 6) : 0;
+  anim.out = o > anim.out ? anim.out * 0.4 + o * 0.6 : anim.out * 0.8 + o * 0.2;
+  anim.mic = anim.mic * 0.8 + m * 0.2;
+}
+function analyse(stream) {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === "suspended") audioCtx.resume();
+  const an = audioCtx.createAnalyser();
+  an.fftSize = 1024;
+  audioCtx.createMediaStreamSource(stream).connect(an);
+  return an;
+}
+
+// ===================================================================== application
 const TOPICS = [
   { id: "presentation", emo: "👋", fr: "Me présenter", ar: "نعرّف بنفسي" },
   { id: "courses", emo: "🛒", fr: "Les courses", ar: "التقضية" },
@@ -140,34 +312,38 @@ const TOPICS = [
   { id: "transports", emo: "🚌", fr: "Le bus", ar: "الطوبيس" },
   { id: "administration", emo: "📄", fr: "Les papiers", ar: "الأوراق" },
   { id: "chiffres", emo: "🔢", fr: "Les chiffres", ar: "الأرقام" },
-  { id: "libre", emo: "💬", fr: "Discuter", ar: "نهضرو شوية", wide: true },
 ];
-const IDLE_LIMIT_MS = 2 * 60 * 1000; // raccroche tout seul après 2 min sans parole
+const IDLE_LIMIT_MS = 2 * 60 * 1000;
 
 const $ = (id) => document.getElementById(id);
-const state = { code: localStorage.getItem("code") || "", topic: null, pc: null, dc: null, stream: null, idleTimer: null, live: false };
+const state = {
+  code: localStorage.getItem("code") || "", topic: null,
+  pc: null, dc: null, stream: null, idleTimer: null, live: false,
+  responseActive: false, needResponse: false, pendingTools: 0, transcript: [],
+};
 
-// ---------- utilitaires ----------
 function show(id) {
   document.querySelectorAll(".screen").forEach((s) => s.classList.toggle("on", s.id === id));
-  const inTalk = id === "talk";
-  $("back").style.visibility = inTalk ? "visible" : "hidden";
-  $("restart").style.visibility = inTalk ? "visible" : "hidden";
-  if (!inTalk) $("title").textContent = "Prof Amina";
+  const sub = id === "talk" || id === "memory";
+  $("back").style.visibility = sub ? "visible" : "hidden";
+  $("memBtn").style.visibility = id === "home" ? "visible" : "hidden";
+  if (!sub) $("title").textContent = "Amina";
 }
 function setStatus(fr, ar) {
   $("status").innerHTML = "";
   const a = document.createElement("span"); a.textContent = fr; $("status").append(a);
   if (ar) { const b = document.createElement("span"); b.className = "ar"; b.textContent = ar; $("status").append(b); }
 }
-function setOrb(mode) { $("orb").className = "orb " + mode; }
+function setMode(mode) {
+  anim.mode = mode;
+  $("ring").className = "ring " + (mode === "thinking" ? "" : mode);
+  $("searchBubble").classList.toggle("on", mode === "thinking");
+}
 function setCallBtn(live, disabled = false) {
   const b = $("callBtn");
   b.disabled = disabled;
   b.classList.toggle("hang", live);
-  b.innerHTML = live
-    ? `📞 Raccrocher<span class="ar">سالينا</span>`
-    : `▶️ Commencer<span class="ar">يالاه نبداو</span>`;
+  b.innerHTML = live ? `📞 Raccrocher<span class="ar">سالينا</span>` : `▶️ Commencer<span class="ar">يالاه نبداو</span>`;
 }
 async function api(path, opts = {}) {
   const r = await fetch(path, { ...opts, headers: { ...(opts.headers || {}), "x-access-code": state.code } });
@@ -175,22 +351,18 @@ async function api(path, opts = {}) {
   if (!r.ok) throw new Error((await r.json().catch(() => ({}))).error || r.status);
   return r;
 }
+const post = (path, body) => api(path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
 
-// ---------- historique (gardé sur le téléphone, un par thème) ----------
-const histKey = () => "hist_" + state.topic;
+// historique local par thème (pour reprendre une leçon)
+const histKey = () => "hist_" + (state.topic || "ami");
 const loadHist = () => { try { return JSON.parse(localStorage.getItem(histKey()) || "[]"); } catch { return []; } };
-function pushHist(role, text) {
-  const h = loadHist(); h.push({ role, text }); localStorage.setItem(histKey(), JSON.stringify(h.slice(-60)));
-}
-function addBubble(role, text) {
+function remember(role, text) {
   if (!text || !text.trim()) return;
-  const d = document.createElement("div");
-  d.className = "bubble " + (role === "user" ? "me" : "prof");
-  d.dir = "auto"; d.textContent = text.trim();
-  $("log").append(d); d.scrollIntoView({ behavior: "smooth", block: "end" });
+  state.transcript.push({ role, text });
+  const h = loadHist(); h.push({ role, text }); localStorage.setItem(histKey(), JSON.stringify(h.slice(-40)));
 }
+function subtitle(text) { $("subtitle").textContent = text || ""; }
 
-// ---------- minuterie d'inactivité ----------
 function bumpIdle() {
   clearTimeout(state.idleTimer);
   if (state.live) state.idleTimer = setTimeout(() => {
@@ -199,109 +371,378 @@ function bumpIdle() {
   }, IDLE_LIMIT_MS);
 }
 
-// ---------- appel en temps réel ----------
+// ---------------------------------------------------------------- appel
 async function startCall() {
   setCallBtn(true, true);
-  setOrb("connecting");
+  setMode("connecting");
+  subtitle(""); $("sources").innerHTML = "";
   setStatus("Connexion…", "كنتاصلو…");
+  state.transcript = [];
   try {
-    state.stream = await navigator.mediaDevices.getUserMedia({
-      audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
-    });
+    state.stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } });
+    micAn = analyse(state.stream);
   } catch {
-    setOrb("idle"); setCallBtn(false);
+    setMode("idle"); setCallBtn(false);
     setStatus("Autorise le micro dans les réglages.", "خصك تسمحي للميكرو");
     return;
   }
   try {
-    const hist = loadHist();
-    const r = await api("/api/session", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ topic: state.topic, history: hist.slice(-20) }),
-    });
-    const { value } = await r.json();
+    const r = await post("/api/session", { topic: state.topic, history: state.topic ? loadHist().slice(-12) : [] });
+    const sess = await r.json();
+    if (sess.provider === "gemini") return await startGemini(sess, false);
+    const { value } = sess;
 
     const pc = new RTCPeerConnection();
     state.pc = pc;
-    pc.ontrack = (e) => { $("remote").srcObject = e.streams[0]; };
+    pc.ontrack = (e) => { $("remote").srcObject = e.streams[0]; outAn = analyse(e.streams[0]); };
     pc.addTrack(state.stream.getTracks()[0], state.stream);
     pc.onconnectionstatechange = () => {
       if (["failed", "disconnected"].includes(pc.connectionState) && state.live) {
         hangUp(); setStatus("La connexion a été coupée. Réessaie.", "تقطع الاتصال، عاودي");
       }
     };
-
     const dc = pc.createDataChannel("oai-events");
     state.dc = dc;
     dc.onmessage = (e) => onEvent(JSON.parse(e.data));
     dc.onopen = () => {
       state.live = true;
       setCallBtn(true);
-      setOrb("speaking");
-      setStatus("Amina parle…", "أمينة كتهضر…");
-      // Amina commence la conversation
-      dc.send(JSON.stringify({ type: "response.create" }));
+      setMode("speaking");
+      setStatus("", "");
+      sendEvent({ type: "response.create" });
       bumpIdle();
     };
-
     const offer = await pc.createOffer();
     await pc.setLocalDescription(offer);
     const sdpRes = await fetch("https://api.openai.com/v1/realtime/calls", {
-      method: "POST",
-      body: offer.sdp,
+      method: "POST", body: offer.sdp,
       headers: { Authorization: `Bearer ${value}`, "Content-Type": "application/sdp" },
     });
     if (!sdpRes.ok) throw new Error("WebRTC " + sdpRes.status + " " + (await sdpRes.text()).slice(0, 200));
     await pc.setRemoteDescription({ type: "answer", sdp: await sdpRes.text() });
   } catch (e) {
-    console.error(e);
-    hangUp();
-    if (e.message !== "code") {
-      setStatus("Impossible de se connecter. Réessaie.", "ما قدرناش نتاصلو، عاودي");
-      const s = document.createElement("small");
-      s.style.cssText = "display:block;color:#999;font-size:12px;margin-top:6px;word-break:break-word";
-      s.textContent = String(e.message || e).slice(0, 200);
-      $("status").append(s);
-    }
+    connectFailed(e);
   }
 }
 
+function connectFailed(e) {
+  console.error(e);
+  hangUp();
+  if (e.message !== "code") {
+    setStatus("Impossible de se connecter. Réessaie.", "ما قدرناش نتاصلو، عاودي");
+    const s = document.createElement("small");
+    s.style.cssText = "display:block;color:#999;font-size:12px;margin-top:6px;word-break:break-word";
+    s.textContent = String(e.message || e).slice(0, 200);
+    $("status").append(s);
+  }
+}
+
+// ===================================================================== Gemini Live (WebSocket)
+const GEMINI_WS = "wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContentConstrained";
+const gem = {
+  ws: null, handle: null, playHead: 0, sources: [], outGain: null, mic: null, worklet: null,
+  inBuf: [], userText: "", ampText: "", reconnecting: false, kicked: false,
+};
+
+const WORKLET = `
+class Cap extends AudioWorkletProcessor {
+  process(inputs) { const ch = inputs[0] && inputs[0][0]; if (ch) this.port.postMessage(ch.slice(0)); return true; }
+}
+registerProcessor('cap', Cap);`;
+
+function b64FromBytes(bytes) {
+  let s = "";
+  for (let i = 0; i < bytes.length; i += 0x8000) s += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+  return btoa(s);
+}
+function bytesFromB64(b64) {
+  const s = atob(b64), out = new Uint8Array(s.length);
+  for (let i = 0; i < s.length; i++) out[i] = s.charCodeAt(i);
+  return out;
+}
+
+async function startMicStreaming() {
+  const ctx = audioCtx;
+  if (!gem.moduleLoaded) {
+    const url = URL.createObjectURL(new Blob([WORKLET], { type: "application/javascript" }));
+    await ctx.audioWorklet.addModule(url);
+    gem.moduleLoaded = true;
+  }
+  gem.mic = ctx.createMediaStreamSource(state.stream);
+  gem.worklet = new AudioWorkletNode(ctx, "cap");
+  const mute = ctx.createGain(); mute.gain.value = 0;
+  gem.mic.connect(gem.worklet); gem.worklet.connect(mute); mute.connect(ctx.destination);
+  const ratio = ctx.sampleRate / 16000;
+  let acc = [];
+  gem.worklet.port.onmessage = (e) => {
+    if (!gem.ws || gem.ws.readyState !== 1 || !state.live) return;
+    const f = e.data;
+    // pendant qu'Amina parle, on n'envoie que la voix forte (évite qu'elle s'entende elle-même)
+    const playing = audioCtx.currentTime < gem.playHead - 0.05;
+    let energy = 0; for (let i = 0; i < f.length; i++) energy += f[i] * f[i];
+    const loud = Math.sqrt(energy / f.length) > 0.06;
+    for (let i = 0; i < f.length; i += ratio) acc.push(playing && !loud ? 0 : f[Math.floor(i)]);
+    if (acc.length >= 1600) { // 100 ms à 16 kHz
+      const pcm = new Int16Array(acc.length);
+      for (let i = 0; i < acc.length; i++) pcm[i] = Math.max(-1, Math.min(1, acc[i])) * 0x7fff;
+      acc = [];
+      gem.ws.send(JSON.stringify({ realtimeInput: { audio: { data: b64FromBytes(new Uint8Array(pcm.buffer)), mimeType: "audio/pcm;rate=16000" } } }));
+    }
+  };
+}
+
+function playPcm(b64, rate) {
+  const bytes = bytesFromB64(b64);
+  const pcm = new Int16Array(bytes.buffer, bytes.byteOffset, Math.floor(bytes.length / 2));
+  const buf = audioCtx.createBuffer(1, pcm.length, rate || 24000);
+  const ch = buf.getChannelData(0);
+  for (let i = 0; i < pcm.length; i++) ch[i] = pcm[i] / 0x8000;
+  const src = audioCtx.createBufferSource();
+  src.buffer = buf; src.connect(gem.outGain);
+  const t = Math.max(audioCtx.currentTime + 0.03, gem.playHead);
+  src.start(t);
+  gem.playHead = t + buf.duration;
+  gem.sources.push(src);
+  src.onended = () => { gem.sources = gem.sources.filter((s) => s !== src); };
+}
+function stopPlayback() {
+  gem.sources.forEach((s) => { try { s.stop(); } catch {} });
+  gem.sources = [];
+  if (audioCtx) gem.playHead = audioCtx.currentTime;
+}
+
+async function startGemini(sess, resuming) {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === "suspended") await audioCtx.resume();
+  if (!gem.outGain) {
+    gem.outGain = audioCtx.createGain();
+    outAn = audioCtx.createAnalyser(); outAn.fftSize = 1024;
+    gem.outGain.connect(outAn); outAn.connect(audioCtx.destination);
+  } else if (!outAn) {
+    outAn = audioCtx.createAnalyser(); outAn.fftSize = 1024;
+    gem.outGain.disconnect(); gem.outGain.connect(outAn); outAn.connect(audioCtx.destination);
+  }
+  const ws = new WebSocket(`${sess.wsUrl || GEMINI_WS}?access_token=${encodeURIComponent(sess.token)}`);
+  gem.ws = ws;
+  ws.onopen = () => ws.send(JSON.stringify({ setup: sess.setup }));
+  ws.onmessage = async (e) => {
+    const text = typeof e.data === "string" ? e.data : await e.data.text();
+    let msg; try { msg = JSON.parse(text); } catch { return; }
+    onGemini(msg, resuming);
+  };
+  ws.onerror = () => {};
+  ws.onclose = (e) => {
+    if (gem.ws !== ws) return;
+    if (state.live && !gem.reconnecting) {
+      if (gem.handle) return resumeGemini();
+      hangUp();
+      setStatus("La connexion a été coupée. Réessaie.", "تقطع الاتصال، عاودي");
+      if (e.reason) { const s = document.createElement("small"); s.style.cssText = "display:block;color:#999;font-size:12px"; s.textContent = e.code + " " + e.reason.slice(0, 160); $("status").append(s); }
+    } else if (!state.live && !gem.reconnecting && state.pc === "gemini") {
+      connectFailed(new Error("Gemini " + e.code + " " + (e.reason || "")));
+    }
+  };
+  state.pc = "gemini"; // marque un appel en cours
+}
+
+async function resumeGemini() {
+  if (gem.reconnecting) return;
+  gem.reconnecting = true;
+  try { gem.ws && gem.ws.close(); } catch {}
+  try {
+    const r = await post("/api/session", { topic: state.topic, history: [], handle: gem.handle });
+    const sess = await r.json();
+    gem.reconnecting = false;
+    await startGemini(sess, true);
+  } catch (e) {
+    gem.reconnecting = false;
+    connectFailed(e);
+  }
+}
+
+function flushUser() {
+  if (gem.userText.trim()) remember("user", gem.userText.trim());
+  gem.userText = "";
+}
+
+async function onGemini(msg, resuming) {
+  if (msg.setupComplete) {
+    if (!state.live) {
+      state.live = true;
+      setCallBtn(true);
+      await startMicStreaming();
+    }
+    setStatus("", "");
+    bumpIdle();
+    if (!resuming && !gem.kicked) {
+      gem.kicked = true;
+      setMode("speaking");
+      gem.ws.send(JSON.stringify({ clientContent: { turns: [{ role: "user", parts: [{ text: "(La conversation commence. Salue-moi comme prévu.)" }] }], turnComplete: true } }));
+    }
+    return;
+  }
+  if (msg.sessionResumptionUpdate) {
+    if (msg.sessionResumptionUpdate.resumable && msg.sessionResumptionUpdate.newHandle) gem.handle = msg.sessionResumptionUpdate.newHandle;
+    return;
+  }
+  if (msg.goAway) { resumeGemini(); return; }
+  if (msg.toolCall) {
+    const responses = [];
+    for (const fc of msg.toolCall.functionCalls || []) {
+      let output;
+      try { output = (await (await post("/api/tool", { name: fc.name, args: fc.args || {} })).json()).output; }
+      catch (err) { output = { error: String(err.message || err) }; }
+      responses.push({ id: fc.id, name: fc.name, response: output });
+    }
+    if (gem.ws && gem.ws.readyState === 1) gem.ws.send(JSON.stringify({ toolResponse: { functionResponses: responses } }));
+    bumpIdle();
+    return;
+  }
+  const sc = msg.serverContent;
+  if (!sc) return;
+  if (sc.inputTranscription && sc.inputTranscription.text) {
+    gem.userText += sc.inputTranscription.text;
+    setMode("user"); setStatus("Je t'écoute…", "كنسمعك…"); bumpIdle();
+  }
+  if (sc.interrupted) { stopPlayback(); gem.ampText = ""; }
+  if (sc.modelTurn && sc.modelTurn.parts) {
+    for (const p of sc.modelTurn.parts) {
+      const d = p.inlineData;
+      if (d && d.data && /audio/.test(d.mimeType || "audio")) {
+        if (anim.mode !== "speaking") { flushUser(); setMode("speaking"); setStatus("", ""); }
+        const m = /rate=(\d+)/.exec(d.mimeType || ""); playPcm(d.data, m ? Number(m[1]) : 24000);
+      }
+    }
+    bumpIdle();
+  }
+  if (sc.outputTranscription && sc.outputTranscription.text) {
+    gem.ampText += sc.outputTranscription.text; subtitle(gem.ampText);
+  }
+  if (sc.groundingMetadata && Array.isArray(sc.groundingMetadata.groundingChunks)) {
+    const list = sc.groundingMetadata.groundingChunks.map((c) => c.web).filter(Boolean).map((w) => ({ url: w.uri, title: w.title || w.domain || "" }));
+    if (list.length) showSources(list.slice(0, 4));
+  }
+  if (sc.turnComplete) {
+    flushUser();
+    if (gem.ampText.trim()) remember("assistant", gem.ampText.trim());
+    gem.ampText = "";
+    const wait = Math.max(0, (gem.playHead - audioCtx.currentTime) * 1000);
+    setTimeout(() => {
+      if (state.live && audioCtx.currentTime >= gem.playHead - 0.05) { setMode("idle"); setStatus("À toi ! Parle quand tu veux.", "دابا نتي، هضري"); }
+    }, wait + 150);
+  }
+}
+
+function stopGemini() {
+  try { gem.ws && gem.ws.close(); } catch {}
+  gem.ws = null;
+  stopPlayback();
+  try { gem.worklet && gem.worklet.disconnect(); gem.mic && gem.mic.disconnect(); } catch {}
+  gem.mic = null; gem.handle = null; gem.kicked = false; gem.userText = ""; gem.ampText = "";
+  if (gem.worklet) { gem.worklet.port.onmessage = null; }
+}
+
+function sendEvent(ev) { if (state.dc && state.dc.readyState === "open") state.dc.send(JSON.stringify(ev)); }
+
 function hangUp() {
+  const hadCall = state.live;
   state.live = false;
   clearTimeout(state.idleTimer);
   try { state.dc && state.dc.close(); } catch {}
-  try { state.pc && state.pc.close(); } catch {}
+  if (state.pc === "gemini") stopGemini();
+  else try { state.pc && state.pc.close(); } catch {}
   if (state.stream) state.stream.getTracks().forEach((t) => t.stop());
   state.pc = state.dc = state.stream = null;
+  outAn = micAn = null;
+  state.responseActive = state.needResponse = false; state.pendingTools = 0;
   $("remote").srcObject = null;
-  setOrb("idle");
+  setMode("idle");
   setCallBtn(false);
   setStatus("Appuie sur Commencer pour parler avec Amina", "ورّكي على يالاه نبداو باش تهضري مع أمينة");
+  // résumé de la conversation pour la mémoire d'Amina (en arrière-plan)
+  if (hadCall && state.transcript.length >= 2) {
+    fetch("/api/summary", {
+      method: "POST", keepalive: true,
+      headers: { "Content-Type": "application/json", "x-access-code": state.code },
+      body: JSON.stringify({ transcript: state.transcript.slice(-80) }),
+    }).catch(() => {});
+    state.transcript = [];
+  }
 }
 
+// ---------------------------------------------------------------- outils (mémoire, recherche)
+async function runTool(callId, name, argsText) {
+  let args = {};
+  try { args = JSON.parse(argsText || "{}"); } catch {}
+  const isSearch = name === "search_web";
+  state.pendingTools++;
+  if (isSearch) { setMode("thinking"); setStatus("Amina cherche…", "أمينة كتقلب…"); $("sources").innerHTML = ""; }
+  let output;
+  try {
+    const r = await post("/api/tool", { name, args });
+    output = (await r.json()).output;
+  } catch (e) {
+    output = { error: "Problème technique : " + e.message };
+  }
+  if (isSearch && output && Array.isArray(output.sources)) showSources(output.sources);
+  sendEvent({ type: "conversation.item.create", item: { type: "function_call_output", call_id: callId, output: JSON.stringify(output) } });
+  state.pendingTools--;
+  bumpIdle();
+  // Après une recherche, Amina doit répondre. Après remember/forget, elle continue sans rien dire de plus.
+  if (isSearch) {
+    if (!state.responseActive && state.pendingTools === 0) sendEvent({ type: "response.create" });
+    else state.needResponse = true;
+  }
+}
+function showSources(list) {
+  $("sources").innerHTML = "";
+  list.forEach((s) => {
+    const a = document.createElement("a");
+    a.href = s.url; a.target = "_blank"; a.rel = "noopener";
+    try { a.textContent = "🔗 " + new URL(s.url).hostname.replace(/^www\./, ""); } catch { a.textContent = "🔗 source"; }
+    a.title = s.title || s.url;
+    $("sources").append(a);
+  });
+}
+
+// ---------------------------------------------------------------- événements temps réel
+let partial = "";
 function onEvent(ev) {
   switch (ev.type) {
     case "input_audio_buffer.speech_started":
-      bumpIdle(); setOrb("user"); setStatus("Je t'écoute…", "كنسمعك…");
+      bumpIdle(); setMode("user"); setStatus("Je t'écoute…", "كنسمعك…");
       break;
     case "input_audio_buffer.speech_stopped":
-      setOrb("listening"); setStatus("…", "");
+      setMode("idle"); setStatus("", "");
+      break;
+    case "response.created":
+      state.responseActive = true; partial = "";
       break;
     case "output_audio_buffer.started":
-    case "response.created":
-      bumpIdle(); setOrb("speaking"); setStatus("Amina parle…", "أمينة كتهضر…");
+      bumpIdle(); setMode("speaking"); setStatus("", "");
+      break;
+    case "response.output_audio_transcript.delta":
+    case "response.audio_transcript.delta":
+      partial += ev.delta || ""; subtitle(partial);
       break;
     case "output_audio_buffer.stopped":
     case "output_audio_buffer.cleared":
-      bumpIdle(); setOrb("listening"); setStatus("À toi ! Parle quand tu veux.", "دابا نتي، هضري");
+      bumpIdle();
+      if (anim.mode !== "thinking") { setMode("idle"); setStatus("À toi ! Parle quand tu veux.", "دابا نتي، هضري"); }
+      break;
+    case "response.done":
+      state.responseActive = false;
+      if (state.needResponse && state.pendingTools === 0) { state.needResponse = false; sendEvent({ type: "response.create" }); }
+      break;
+    case "response.function_call_arguments.done":
+      runTool(ev.call_id, ev.name, ev.arguments);
       break;
     case "conversation.item.input_audio_transcription.completed":
-      if (ev.transcript) { addBubble("user", ev.transcript); pushHist("user", ev.transcript); }
+      remember("user", ev.transcript);
       break;
     case "response.output_audio_transcript.done":
     case "response.audio_transcript.done":
-      if (ev.transcript) { addBubble("prof", ev.transcript); pushHist("assistant", ev.transcript); }
+      if (ev.transcript) { subtitle(ev.transcript); remember("assistant", ev.transcript); }
       break;
     case "error":
       console.error("Realtime error", ev.error);
@@ -309,42 +750,57 @@ function onEvent(ev) {
   }
 }
 
-// ---------- navigation ----------
-function openTopic(t) {
-  state.topic = t.id;
-  $("title").textContent = t.emo + " " + t.fr;
-  $("log").innerHTML = "";
-  loadHist().slice(-12).forEach((h) => addBubble(h.role, h.text));
+// ---------------------------------------------------------------- écrans
+function openTalk(topic) {
+  state.topic = topic ? topic.id : null;
+  $("title").textContent = topic ? topic.emo + " " + topic.fr : "💬 Amina";
+  subtitle(""); $("sources").innerHTML = "";
   show("talk");
   hangUp();
 }
-$("callBtn").onclick = () => (state.live || state.pc ? hangUp() : startCall());
-$("back").onclick = () => { hangUp(); state.topic = null; show("topics"); };
-$("restart").onclick = () => {
-  hangUp();
-  localStorage.removeItem(histKey());
-  $("log").innerHTML = "";
-  setStatus("Leçon remise à zéro. Appuie sur Commencer.", "بدينا من الأول. ورّكي على يالاه نبداو");
+async function openMemory() {
+  show("memory");
+  $("title").textContent = "🧠 Mémoire";
+  $("factList").innerHTML = "…";
+  $("wipeBtn").classList.remove("armed"); $("wipeBtn").textContent = "Tout oublier";
+  try {
+    const m = await (await api("/api/memory")).json();
+    $("factList").innerHTML = "";
+    if (!m.facts.length) $("factList").textContent = "Rien pour l'instant. Parle avec Amina !";
+    m.facts.slice().reverse().forEach((f) => {
+      const d = document.createElement("div"); d.className = "fact";
+      d.textContent = f.text;
+      const s = document.createElement("small"); s.textContent = f.date; d.append(s);
+      $("factList").append(d);
+    });
+  } catch (e) { $("factList").textContent = "Impossible de charger la mémoire."; }
+}
+$("wipeBtn").onclick = async () => {
+  const b = $("wipeBtn");
+  if (!b.classList.contains("armed")) { b.classList.add("armed"); b.textContent = "Sûr ? Appuie encore pour tout effacer"; return; }
+  await api("/api/memory", { method: "DELETE" });
+  Object.keys(localStorage).filter((k) => k.startsWith("hist_")).forEach((k) => localStorage.removeItem(k));
+  openMemory();
 };
-document.addEventListener("visibilitychange", () => {
-  // Si l'application passe en arrière-plan longtemps, la minuterie coupera l'appel
-  if (document.visibilityState === "hidden") bumpIdle();
-});
+$("callBtn").onclick = () => (state.live || state.pc ? hangUp() : startCall());
+$("back").onclick = () => { hangUp(); state.topic = null; show("home"); };
+$("memBtn").onclick = openMemory;
+$("friendBtn").onclick = () => openTalk(null);
 
 function buildTopics() {
   TOPICS.forEach((t) => {
     const b = document.createElement("button");
-    b.className = "topic" + (t.wide ? " wide" : "");
+    b.className = "topic";
     b.innerHTML = `<span class="emo">${t.emo}</span><span class="fr"></span><span class="ar"></span>`;
     b.querySelector(".fr").textContent = t.fr;
     b.querySelector(".ar").textContent = t.ar;
-    b.onclick = () => openTopic(t);
+    b.onclick = () => openTalk(t);
     $("grid").append(b);
   });
 }
 async function checkCode() {
-  try { await api("/api/check"); show("topics"); }
-  catch (e) { if (e.message !== "code") show("topics"); }
+  try { await api("/api/check"); show("home"); }
+  catch (e) { if (e.message !== "code") show("home"); }
 }
 $("codeBtn").onclick = async () => {
   state.code = $("codeInput").value.trim();
@@ -353,6 +809,9 @@ $("codeBtn").onclick = async () => {
   await checkCode();
   if ($("code").classList.contains("on")) $("codeErr").textContent = "Code incorrect";
 };
+
+faces.push(makeFace($("homeFace")), makeFace($("talkFace")));
+requestAnimationFrame(loop);
 buildTopics();
 setCallBtn(false);
 checkCode();

@@ -1,49 +1,37 @@
-# Prof Amina : professeure de français en conversation vocale (version 2, temps réel)
+# Amina : amie et professeure de français (version 4)
 
-L'élève appuie une seule fois sur « Commencer », puis parle naturellement avec Amina, comme au téléphone.
-Il n'y a pas de bouton à presser à chaque phrase : Amina détecte toute seule quand l'élève a fini de parler, et on peut l'interrompre.
-Amina explique en darija marocaine et fait répéter les phrases en français.
+- **Avatar animé** : le visage d'Amina (dessin original) bouge la bouche au rythme de sa voix, cligne des yeux, écoute et réfléchit.
+- **Conversation en face à face**, en temps réel, sans bouton.
+- **Langue** : Amina parle toujours en français simple, passe en darija seulement quand l'élève ne comprend pas, puis revient au français.
+- **Mémoire** : Amina retient ce qui compte et résume chaque conversation. Tout est gardé dans `/app/data/memoire.json`. Le bouton 🧠 affiche ce qu'elle sait et permet de tout effacer.
+- **Recherche sur internet** : la recherche Google est intégrée avec Gemini (avec OpenAI, c'est la recherche web d'OpenAI). Les sources s'affichent sous les sous-titres.
 
-Technologie : l'API Realtime d'OpenAI (la même que le mode vocal de ChatGPT), connectée en WebRTC.
+## Deux moteurs au choix
 
-## Fichiers
-
-| Fichier | Rôle |
-|---|---|
-| `server.js` | Crée une clé temporaire (10 minutes) pour chaque conversation, avec les consignes d'Amina. La vraie clé OpenAI reste sur le serveur. |
-| `public/index.html` | L'application affichée sur le téléphone |
-| `public/manifest.webmanifest`, `public/icon-*.png` | L'icône et le nom pour l'écran d'accueil |
-| `Dockerfile` | La recette utilisée par Coolify |
-
-## Réglages (Environment Variables dans Coolify)
-
-| Nom | Obligatoire ? | Valeur |
+| Moteur | Quand il est utilisé | Coût |
 |---|---|---|
-| `OPENAI_API_KEY` | **oui** | clé API OpenAI (platform.openai.com → API keys), commence par `sk-` |
-| `ACCESS_CODE` | conseillé | code demandé une fois sur le téléphone (ex. `2580`) |
-| `REALTIME_MODEL` | non | par défaut `gpt-realtime-2.1`. Version moins chère : `gpt-realtime-2.1-mini` |
-| `REALTIME_VOICE` | non | par défaut `marin` (voix féminine) |
+| **Google Gemini Live** (`gemini-3.8-live`) | dès que `GEMINI_API_KEY` est défini | environ 0,005 $/min en entrée et 0,018 $/min en sortie, avec une offre gratuite limitée |
+| OpenAI Realtime (`gpt-realtime-2.1`) | si `GEMINI_API_KEY` est absent | beaucoup plus cher |
 
-Pour toutes ces variables, choisissez **Build time : Not available during build**.
-`GROQ_API_KEY` et `ELEVENLABS_API_KEY` ne servent plus dans cette version : vous pouvez les laisser ou les supprimer.
+## Réglages (Environment Variables dans Coolify, Build time : Not available during build)
 
-## Mise à jour sur GitHub et Coolify
+| Nom | Valeur |
+|---|---|
+| `GEMINI_API_KEY` | clé Google (aistudio.google.com/apikey), commence par `AIza` |
+| `ACCESS_CODE` | ex. `2580` |
+| `GEMINI_VOICE` | optionnel, défaut `Sulafat` (autres voix féminines : `Kore`, `Aoede`, `Leda`) |
+| `GEMINI_MODEL` | optionnel, défaut `gemini-3.8-live` |
+| `GEMINI_TEXT_MODEL` | optionnel, modèle qui résume les conversations, défaut `gemini-flash-latest` |
+| `OPENAI_API_KEY` | facultatif, sert de solution de secours si vous retirez la clé Gemini |
 
-1. Sur GitHub (dépôt `prof-amina`) : Add file → Upload files, puis glissez `server.js`, `LISEZMOI.md` et le dossier `public`. Les fichiers existants sont remplacés. Terminez par Commit changes.
-2. Dans Coolify : Environment Variables → ajoutez `OPENAI_API_KEY`.
-3. Cliquez sur **Deploy**.
-4. Vérifiez `https://prof.72.62.190.74.sslip.io/api/health` : vous devez voir `"mode":"realtime"` et `"keySet":true`.
+## Persistent Storage (obligatoire pour garder la mémoire)
 
-## Coûts et sécurité
+Dans Coolify : application → **Persistent Storage** → **+ Add** → **Volume Mount** :
+- Name : `amina-memoire`
+- Destination Path : `/app/data`
 
-- OpenAI facture à la minute de conversation. Fixez une **limite de dépense** dans platform.openai.com → Settings → Limits.
-- L'application **raccroche toute seule après 2 minutes sans parole**.
-- Le bouton rouge **Raccrocher** arrête immédiatement la facturation.
+## Mise à jour
 
-## Utilisation
-
-1. Choisir un thème.
-2. Appuyer sur **▶️ Commencer / يالاه نبداو**. Amina salue et commence la leçon.
-3. Parler normalement. La boule devient verte quand l'élève parle et orange quand Amina parle.
-4. **📞 Raccrocher** pour terminer. La séance suivante reprend là où on s'était arrêté, car Amina se souvient de la fin de la dernière séance.
-5. **↺** (en haut à droite) : effacer la mémoire de ce thème pour recommencer à zéro.
+1. Sur GitHub : Add file → Upload files, glissez tout le contenu du dossier, puis Commit changes.
+2. Dans Coolify : ajoutez `GEMINI_API_KEY` et le Persistent Storage, puis cliquez sur **Redeploy**.
+3. Vérifiez `https://prof.72.62.190.74.sslip.io/api/health` : vous devez voir `"provider":"gemini"`, `"keySet":true` et `"memoryWritable":true`.
