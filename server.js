@@ -236,7 +236,19 @@ const GEMINI_FUNCTIONS = TOOLS.filter((t) => t.name !== "search_web").map((t) =>
   name: t.name, description: t.description, parameters: toGeminiSchema(t.parameters),
 }));
 
-async function createGeminiSession(topic, history, handle) {
+// GEMINI_GOOGLE_SEARCH=off : pas de recherche Google intégrée (l'offre gratuite ne la permet pas avec Gemini 3).
+const GEMINI_GOOGLE_SEARCH = (process.env.GEMINI_GOOGLE_SEARCH || "on").toLowerCase() !== "off";
+const SEARCH_FN = TOOLS.find((t) => t.name === "search_web");
+
+async function createGeminiSession(topic, history, handle, noGoogle) {
+  const useGoogle = GEMINI_GOOGLE_SEARCH && !noGoogle;
+  const functions = [...GEMINI_FUNCTIONS];
+  // Sans recherche Google : recherche par OpenAI si une clé OpenAI existe
+  if (!useGoogle && OPENAI_API_KEY)
+    functions.push({ name: SEARCH_FN.name, description: SEARCH_FN.description, parameters: toGeminiSchema(SEARCH_FN.parameters) });
+  let instructions = buildInstructions(topic, history);
+  if (!useGoogle && !OPENAI_API_KEY)
+    instructions += "\n\nIMPORTANT : tu n'as PAS accès à internet aujourd'hui. Si elle demande une information actuelle, dis-le gentiment et conseille-lui où la trouver.";
   const now = Date.now();
   const tokenBody = {
     uses: 1,
@@ -258,8 +270,8 @@ async function createGeminiSession(topic, history, handle) {
       responseModalities: ["AUDIO"],
       speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: GEMINI_VOICE } } },
     },
-    systemInstruction: { parts: [{ text: buildInstructions(topic, history) }] },
-    tools: [{ googleSearch: {} }, { functionDeclarations: GEMINI_FUNCTIONS }],
+    systemInstruction: { parts: [{ text: instructions }] },
+    tools: useGoogle ? [{ googleSearch: {} }, { functionDeclarations: functions }] : [{ functionDeclarations: functions }],
     realtimeInputConfig: {
       automaticActivityDetection: { endOfSpeechSensitivity: "END_SENSITIVITY_LOW", silenceDurationMs: 900 },
     },
@@ -268,7 +280,7 @@ async function createGeminiSession(topic, history, handle) {
     sessionResumption: handle ? { handle } : {},
     contextWindowCompression: { slidingWindow: {} },
   };
-  return { provider: "gemini", token: token.name, setup, wsUrl: process.env.GEMINI_WS_URL || undefined };
+  return { provider: "gemini", token: token.name, setup, google: useGoogle, wsUrl: process.env.GEMINI_WS_URL || undefined };
 }
 
 async function summarizeWithGemini(prompt) {
@@ -399,8 +411,8 @@ const server = http.createServer(async (req, res) => {
     if (!GEMINI_API_KEY && !OPENAI_API_KEY) return send(res, 500, { error: "Aucune clé (GEMINI_API_KEY ou OPENAI_API_KEY) sur le serveur" });
 
     if (url.pathname === "/api/session" && req.method === "POST") {
-      const { topic, history, handle } = await json(req);
-      if (PROVIDER === "gemini") return send(res, 200, await createGeminiSession(topic, history, handle));
+      const { topic, history, handle, noGoogle } = await json(req);
+      if (PROVIDER === "gemini") return send(res, 200, await createGeminiSession(topic, history, handle, !!noGoogle));
       const value = await createRealtimeSecret(topic, history);
       if (!value) throw new Error("Pas de clé temporaire reçue");
       return send(res, 200, { provider: "openai", value, model: REALTIME_MODEL });

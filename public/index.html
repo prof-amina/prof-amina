@@ -372,7 +372,7 @@ function bumpIdle() {
 }
 
 // ---------------------------------------------------------------- appel
-async function startCall() {
+async function startCall(opts = {}) {
   setCallBtn(true, true);
   setMode("connecting");
   subtitle(""); $("sources").innerHTML = "";
@@ -387,7 +387,7 @@ async function startCall() {
     return;
   }
   try {
-    const r = await post("/api/session", { topic: state.topic, history: state.topic ? loadHist().slice(-12) : [] });
+    const r = await post("/api/session", { topic: state.topic, history: state.topic ? loadHist().slice(-12) : [], noGoogle: !!(opts.noGoogle || gem.triedNoGoogle) });
     const sess = await r.json();
     if (sess.provider === "gemini") return await startGemini(sess, false);
     const { value } = sess;
@@ -522,6 +522,7 @@ async function startGemini(sess, resuming) {
     outAn = audioCtx.createAnalyser(); outAn.fftSize = 1024;
     gem.outGain.disconnect(); gem.outGain.connect(outAn); outAn.connect(audioCtx.destination);
   }
+  gem.noGoogle = !sess.google;
   const ws = new WebSocket(`${sess.wsUrl || GEMINI_WS}?access_token=${encodeURIComponent(sess.token)}`);
   gem.ws = ws;
   ws.onopen = () => ws.send(JSON.stringify({ setup: sess.setup }));
@@ -533,6 +534,13 @@ async function startGemini(sess, resuming) {
   ws.onerror = () => {};
   ws.onclose = (e) => {
     if (gem.ws !== ws) return;
+    // Offre gratuite : la recherche Google intégrée est refusée -> on se reconnecte sans elle
+    if (/quota/i.test(e.reason || "") && sess.google && !gem.gotAudio && !gem.triedNoGoogle) {
+      gem.triedNoGoogle = true;
+      hangUp();
+      startCall({ noGoogle: true });
+      return;
+    }
     if (state.live && !gem.reconnecting) {
       if (gem.handle) return resumeGemini();
       hangUp();
@@ -550,7 +558,7 @@ async function resumeGemini() {
   gem.reconnecting = true;
   try { gem.ws && gem.ws.close(); } catch {}
   try {
-    const r = await post("/api/session", { topic: state.topic, history: [], handle: gem.handle });
+    const r = await post("/api/session", { topic: state.topic, history: [], handle: gem.handle, noGoogle: gem.noGoogle });
     const sess = await r.json();
     gem.reconnecting = false;
     await startGemini(sess, true);
@@ -589,9 +597,13 @@ async function onGemini(msg, resuming) {
   if (msg.toolCall) {
     const responses = [];
     for (const fc of msg.toolCall.functionCalls || []) {
+      const isSearch = fc.name === "search_web";
+      if (isSearch) { setMode("thinking"); setStatus("Amina cherche…", "أمينة كتقلب…"); $("sources").innerHTML = ""; }
       let output;
       try { output = (await (await post("/api/tool", { name: fc.name, args: fc.args || {} })).json()).output; }
       catch (err) { output = { error: String(err.message || err) }; }
+      if (isSearch && output && Array.isArray(output.sources)) showSources(output.sources);
+      if (isSearch) setMode("idle");
       responses.push({ id: fc.id, name: fc.name, response: output });
     }
     if (gem.ws && gem.ws.readyState === 1) gem.ws.send(JSON.stringify({ toolResponse: { functionResponses: responses } }));
@@ -609,6 +621,7 @@ async function onGemini(msg, resuming) {
     for (const p of sc.modelTurn.parts) {
       const d = p.inlineData;
       if (d && d.data && /audio/.test(d.mimeType || "audio")) {
+        gem.gotAudio = true;
         if (anim.mode !== "speaking") { flushUser(); setMode("speaking"); setStatus("", ""); }
         const m = /rate=(\d+)/.exec(d.mimeType || ""); playPcm(d.data, m ? Number(m[1]) : 24000);
       }
@@ -638,7 +651,7 @@ function stopGemini() {
   gem.ws = null;
   stopPlayback();
   try { gem.worklet && gem.worklet.disconnect(); gem.mic && gem.mic.disconnect(); } catch {}
-  gem.mic = null; gem.handle = null; gem.kicked = false; gem.userText = ""; gem.ampText = "";
+  gem.mic = null; gem.handle = null; gem.kicked = false; gem.userText = ""; gem.ampText = ""; gem.gotAudio = false;
   if (gem.worklet) { gem.worklet.port.onmessage = null; }
 }
 
