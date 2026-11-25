@@ -1,9 +1,10 @@
-# Amina : amie et professeure de français (version 4)
+# Amina : amie et professeure de français (version 5)
 
 - **Avatar animé** : le visage d'Amina (dessin original) bouge la bouche au rythme de sa voix, cligne des yeux, écoute et réfléchit.
 - **Conversation en face à face**, en temps réel, sans bouton.
 - **Langue** : Amina parle toujours en français simple, passe en darija seulement quand l'élève ne comprend pas, puis revient au français.
 - **Mémoire** : Amina retient ce qui compte et résume chaque conversation. Tout est gardé dans `/app/data/memoire.json`. Le bouton 🧠 affiche ce qu'elle sait et permet de tout effacer.
+- **Adaptée aux débutants** (v5) : Amina parle lentement, en phrases courtes, une question à la fois, puis attend la réponse (2 s de silence avant qu'elle reprenne la parole). Réglage de vitesse 🐢 (Lente, Très lente, Normale). Chaque phrase d'Amina s'affiche en français avec sa traduction en darija écrite en lettres arabes. Boutons 🔁 عاودي (réécouter) et ❓ ما فهمتش (explication en darija).
 - **Recherche sur internet** : la recherche Google est intégrée avec Gemini (avec OpenAI, c'est la recherche web d'OpenAI). Les sources s'affichent sous les sous-titres.
 
 ## Deux moteurs au choix
@@ -22,7 +23,9 @@
 | `GEMINI_VOICE` | optionnel, défaut `Sulafat` (autres voix féminines : `Kore`, `Aoede`, `Leda`) |
 | `GEMINI_MODEL` | optionnel, défaut `gemini-3.8-live` |
 | `GEMINI_TEXT_MODEL` | optionnel, modèle qui résume les conversations, défaut `gemini-flash-latest` |
-| `OPENAI_API_KEY` | facultatif, sert de solution de secours si vous retirez la clé Gemini |
+| `OPENAI_API_KEY` | recherches internet et traduction des sous-titres (quelques centimes) ; secours si vous retirez la clé Gemini |
+| `GEMINI_SILENCE_MS` | optionnel, silence avant qu'Amina reprenne la parole, défaut `2000` (2 secondes) |
+| `TRANSLATE_MODEL` | optionnel, modèle OpenAI des traductions, défaut `gpt-5-mini` |
 
 ## Persistent Storage (obligatoire pour garder la mémoire)
 

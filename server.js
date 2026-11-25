@@ -101,6 +101,13 @@ LANGUE — RÈGLE LA PLUS IMPORTANTE :
 - Si elle te parle en darija, tu peux lui répondre une phrase en darija pour la rassurer, puis tu l'aides à dire la même chose en français.
 - Ta darija est marocaine, avec l'accent marocain : واش، شنو، كيفاش، بغيت، دابا، مزيان، بزاف، عافاك، شوية، صافي، يالاه، زوين، واخا. JAMAIS d'arabe classique (fusha) ni d'arabe du Moyen-Orient.
 
+RYTHME — TRÈS IMPORTANT, ELLE COMPREND ENCORE MAL LE FRANÇAIS :
+- Parle LENTEMENT, très calmement, en articulant chaque mot, comme à une personne qui débute.
+- Phrases TRÈS COURTES : 4 à 8 mots. Mots simples du quotidien. Pas d'expressions compliquées.
+- Fais une petite pause entre chaque phrase.
+- UNE SEULE question à la fois. Après ta question, TAIS-TOI et attends sa réponse, même si elle met du temps. Ne relance pas, ne pose pas une deuxième question, ne réponds pas à sa place.
+- Si elle se tait longtemps, ne parle pas tant qu'elle ne dit rien.
+
 COMME UNE VRAIE CONVERSATION :
 - Phrases courtes et naturelles, 1 à 3 phrases par tour, puis tu la laisses parler. Jamais de listes ni de discours.
 - Tu écoutes vraiment : tu réagis à ce qu'elle dit, tu poses des questions sur sa vie, tu montres de l'empathie, tu ris avec elle.
@@ -273,7 +280,12 @@ async function createGeminiSession(topic, history, handle, noGoogle) {
     systemInstruction: { parts: [{ text: instructions }] },
     tools: useGoogle ? [{ googleSearch: {} }, { functionDeclarations: functions }] : [{ functionDeclarations: functions }],
     realtimeInputConfig: {
-      automaticActivityDetection: { endOfSpeechSensitivity: "END_SENSITIVITY_LOW", silenceDurationMs: 900 },
+      // Patience : elle peut chercher ses mots sans être coupée
+      automaticActivityDetection: {
+        startOfSpeechSensitivity: "START_SENSITIVITY_LOW",
+        endOfSpeechSensitivity: "END_SENSITIVITY_LOW",
+        silenceDurationMs: Number(process.env.GEMINI_SILENCE_MS || 2000),
+      },
     },
     inputAudioTranscription: {},
     outputAudioTranscription: {},
@@ -289,6 +301,27 @@ async function summarizeWithGemini(prompt) {
     generationConfig: { responseMimeType: "application/json" },
   });
   return (data.candidates?.[0]?.content?.parts || []).map((p) => p.text || "").join("");
+}
+
+// ---------------------------------------------------------------- traduction des sous-titres
+const TRANSLATE_MODEL = process.env.TRANSLATE_MODEL || "gpt-5-mini";
+const translateCache = new Map();
+async function translateToArabic(text) {
+  const key = text.trim();
+  if (translateCache.has(key)) return translateCache.get(key);
+  const prompt = `Traduis ce texte français en darija marocaine, écrite en lettres arabes, avec des mots simples. Réponds uniquement avec la traduction, sans guillemets ni explication. Si le texte est déjà en arabe, recopie-le tel quel.\n\n${key}`;
+  let ar;
+  if (OPENAI_API_KEY) {
+    const data = await openai("/responses", { model: TRANSLATE_MODEL, reasoning: { effort: "minimal" }, input: prompt });
+    ar = responseText(data);
+  } else {
+    const data = await gemini(`/models/${GEMINI_TEXT_MODEL}:generateContent`, { contents: [{ role: "user", parts: [{ text: prompt }] }] });
+    ar = (data.candidates?.[0]?.content?.parts || []).map((p) => p.text || "").join("");
+  }
+  ar = String(ar || "").trim().slice(0, 1000);
+  if (translateCache.size > 500) translateCache.clear();
+  translateCache.set(key, ar);
+  return ar;
 }
 
 function responseText(data) {
@@ -435,6 +468,14 @@ const server = http.createServer(async (req, res) => {
         }
       } else output = { error: "outil inconnu" };
       return send(res, 200, { output });
+    }
+
+    if (url.pathname === "/api/translate" && req.method === "POST") {
+      const { text } = await json(req);
+      const t = String(text || "").slice(0, 1500);
+      if (!t.trim()) return send(res, 200, { ar: "" });
+      try { return send(res, 200, { ar: await translateToArabic(t) }); }
+      catch (e) { console.error(e); return send(res, 200, { ar: "", error: "traduction indisponible" }); }
     }
 
     if (url.pathname === "/api/summary" && req.method === "POST") {

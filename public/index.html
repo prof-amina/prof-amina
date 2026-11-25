@@ -67,8 +67,8 @@
 
   /* conversation */
   #talk { min-height: 0; align-items: center; }
-  .stage { flex: 1; min-height: 0; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 8px 16px; gap: 10px; }
-  #talk .face-wrap { width: min(78vw, 46vh, 380px); aspect-ratio: 1; position: relative; }
+  .stage { flex: 1; min-height: 0; width: 100%; display: flex; flex-direction: column; align-items: center; padding: 10px 14px 4px; gap: 8px; }
+  #talk .face-wrap { width: min(52vw, 26vh, 240px); aspect-ratio: 1; position: relative; flex: none; }
   .face-wrap svg { width: 100%; height: 100%; display: block; }
   .ring { position: absolute; inset: -6px; border-radius: 50%; border: 5px solid transparent; transition: border-color .3s; }
   .ring.user { border-color: rgba(31,111,107,.55); animation: pulse 1.1s ease-in-out infinite; }
@@ -84,20 +84,32 @@
   @keyframes bob { 50% { transform: translateY(-5px); } }
   #status { font-size: 18px; text-align: center; min-height: 2.6em; color: var(--muted); }
   #status .ar { display: block; font-size: 21px; color: var(--terracotta-dark); }
-  #subtitle {
-    width: 100%; max-width: 520px; min-height: 3.2em; max-height: 7.5em; overflow-y: auto;
-    background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 10px 14px;
-    font-size: 19px; line-height: 1.45; text-align: center; white-space: pre-wrap;
-  }
-  #subtitle:empty { visibility: hidden; }
+  /* sous-titres : français + traduction arabe */
+  #lines { flex: 1; min-height: 0; width: 100%; max-width: 560px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding: 2px 2px 8px; }
+  .line { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 12px 16px; opacity: .55; }
+  .line.last { opacity: 1; border: 2px solid var(--saffron); box-shadow: 0 4px 14px rgba(181,83,47,.12); }
+  .line .fr { font-size: 22px; line-height: 1.4; font-weight: 600; color: var(--ink); }
+  .line .tr { font-size: 24px; line-height: 1.6; color: var(--terracotta-dark); margin-top: 6px; padding-top: 6px; border-top: 1px dashed var(--line); text-align: right; }
+  .line .tr:empty { display: none; }
+  .line .tr.wait { color: var(--muted); font-size: 18px; }
+  .line.me { background: var(--teal-light); border-color: transparent; align-self: flex-end; max-width: 85%; padding: 8px 14px; opacity: .8; }
+  .line.me .fr { font-size: 17px; font-weight: 400; color: var(--teal); }
   #sources { width: 100%; max-width: 520px; display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
   #sources a {
     font-size: 13px; color: var(--teal); background: var(--teal-light); border-radius: 999px; padding: 5px 10px;
     text-decoration: none; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   }
-  .controls { padding: 10px 18px calc(16px + env(safe-area-inset-bottom)); display: flex; justify-content: center; width: 100%; }
+  .controls { padding: 8px 14px calc(14px + env(safe-area-inset-bottom)); display: flex; justify-content: center; align-items: center; gap: 14px; width: 100%; }
+  .side {
+    width: 78px; height: 78px; border-radius: 50%; border: 2px solid var(--line); background: #fff; flex: none;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 28px; color: var(--ink); padding: 0;
+  }
+  .side small { font-size: 13px; color: var(--muted); font-family: "Noto Naskh Arabic", system-ui, sans-serif; }
+  .side:disabled { opacity: .35; }
+  .side.hidden { visibility: hidden; }
+  #speedBtn { width: auto; height: auto; border-radius: 999px; padding: 6px 14px; font-size: 16px; flex-direction: row; gap: 6px; }
   #callBtn {
-    min-width: 260px; padding: 20px 28px; border: 0; border-radius: 999px;
+    min-width: 170px; padding: 18px 22px; border: 0; border-radius: 999px;
     font-size: 22px; font-weight: 800; color: #fff; background: var(--teal);
     box-shadow: 0 8px 22px rgba(31,111,107,.3);
   }
@@ -147,10 +159,15 @@
   <div class="stage">
     <div class="face-wrap" id="talkFace"><div class="ring" id="ring"></div><div class="bubble-search" id="searchBubble">🔎</div></div>
     <div id="status"></div>
-    <div id="subtitle" dir="auto"></div>
+    <button class="side" id="speedBtn"></button>
+    <div id="lines" aria-live="polite"></div>
     <div id="sources"></div>
   </div>
-  <div class="controls"><button id="callBtn"></button></div>
+  <div class="controls">
+    <button class="side hidden" id="againBtn" aria-label="Réécouter">🔁<small>عاودي</small></button>
+    <button id="callBtn"></button>
+    <button class="side hidden" id="huhBtn" aria-label="Je n'ai pas compris">❓<small>ما فهمتش</small></button>
+  </div>
 </section>
 
 <!-- mémoire -->
@@ -313,7 +330,7 @@ const TOPICS = [
   { id: "administration", emo: "📄", fr: "Les papiers", ar: "الأوراق" },
   { id: "chiffres", emo: "🔢", fr: "Les chiffres", ar: "الأرقام" },
 ];
-const IDLE_LIMIT_MS = 2 * 60 * 1000;
+const IDLE_LIMIT_MS = 3 * 60 * 1000;
 
 const $ = (id) => document.getElementById(id);
 const state = {
@@ -344,6 +361,9 @@ function setCallBtn(live, disabled = false) {
   b.disabled = disabled;
   b.classList.toggle("hang", live);
   b.innerHTML = live ? `📞 Raccrocher<span class="ar">سالينا</span>` : `▶️ Commencer<span class="ar">يالاه نبداو</span>`;
+  const on = live && !disabled;
+  $("huhBtn").classList.toggle("hidden", !on);
+  $("againBtn").classList.toggle("hidden", !(on && state.pc === "gemini"));
 }
 async function api(path, opts = {}) {
   const r = await fetch(path, { ...opts, headers: { ...(opts.headers || {}), "x-access-code": state.code } });
@@ -361,7 +381,55 @@ function remember(role, text) {
   state.transcript.push({ role, text });
   const h = loadHist(); h.push({ role, text }); localStorage.setItem(histKey(), JSON.stringify(h.slice(-40)));
 }
-function subtitle(text) { $("subtitle").textContent = text || ""; }
+// ---- sous-titres : chaque phrase d'Amina en français + traduction en arabe
+const hasArabic = (t) => /[\u0600-\u06FF]/.test(t);
+let curLine = null;
+function markLast(el) {
+  document.querySelectorAll("#lines .line.last").forEach((x) => x.classList.remove("last"));
+  if (el) el.classList.add("last");
+}
+function newLine(role) {
+  const d = document.createElement("div");
+  d.className = "line" + (role === "user" ? " me" : "");
+  d.innerHTML = '<div class="fr" dir="auto"></div><div class="tr" dir="rtl"></div>';
+  $("lines").append(d);
+  const all = $("lines").querySelectorAll(".line");
+  if (all.length > 30) all[0].remove();
+  return d;
+}
+function scrollLines() { const l = $("lines"); l.scrollTop = l.scrollHeight; }
+function subtitle(text) {           // texte d'Amina en cours (au fil de la voix)
+  if (!text) { curLine = null; return; }
+  if (!curLine) { curLine = newLine("amina"); markLast(curLine); }
+  curLine.querySelector(".fr").textContent = text;
+  scrollLines();
+}
+async function finishLine(text) {    // phrase d'Amina terminée -> traduction
+  const line = curLine || newLine("amina");
+  curLine = null;
+  text = (text || "").trim();
+  if (!text) { line.remove(); return; }
+  line.querySelector(".fr").textContent = text;
+  markLast(line); scrollLines();
+  if (hasArabic(text) && !/[a-zA-Zàâçéèêëîïôûùüÿœ]{3,}/.test(text)) return; // déjà en darija
+  const tr = line.querySelector(".tr");
+  tr.textContent = "…"; tr.classList.add("wait");
+  try {
+    const { ar } = await (await post("/api/translate", { text })).json();
+    tr.classList.remove("wait"); tr.textContent = ar || "";
+  } catch { tr.textContent = ""; }
+  scrollLines();
+}
+function userLine(text) {
+  if (!text || !text.trim()) return;
+  const l = newLine("user"); l.querySelector(".fr").textContent = text.trim(); scrollLines();
+}
+
+// ---- vitesse de la voix (lecture ralentie sur le téléphone)
+const SPEEDS = [{ v: 0.9, fr: "Lente" }, { v: 0.8, fr: "Très lente" }, { v: 1, fr: "Normale" }];
+let speedIdx = Math.max(0, SPEEDS.findIndex((x) => String(x.v) === localStorage.getItem("speed")));
+function speed() { return SPEEDS[speedIdx].v; }
+function showSpeed() { $("speedBtn").innerHTML = "🐢 Vitesse : " + SPEEDS[speedIdx].fr; }
 
 function bumpIdle() {
   clearTimeout(state.idleTimer);
@@ -441,7 +509,7 @@ function connectFailed(e) {
 const GEMINI_WS = "wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContentConstrained";
 const gem = {
   ws: null, handle: null, playHead: 0, sources: [], outGain: null, mic: null, worklet: null,
-  inBuf: [], userText: "", ampText: "", reconnecting: false, kicked: false,
+  inBuf: [], userText: "", ampText: "", reconnecting: false, kicked: false, turnBufs: [], lastBufs: [],
 };
 
 const WORKLET = `
@@ -497,13 +565,21 @@ function playPcm(b64, rate) {
   const buf = audioCtx.createBuffer(1, pcm.length, rate || 24000);
   const ch = buf.getChannelData(0);
   for (let i = 0; i < pcm.length; i++) ch[i] = pcm[i] / 0x8000;
+  gem.turnBufs.push(buf);
+  playBuffer(buf);
+}
+function playBuffer(buf) {
   const src = audioCtx.createBufferSource();
-  src.buffer = buf; src.connect(gem.outGain);
+  src.buffer = buf; src.playbackRate.value = speed(); src.connect(gem.outGain);
   const t = Math.max(audioCtx.currentTime + 0.03, gem.playHead);
   src.start(t);
-  gem.playHead = t + buf.duration;
+  gem.playHead = t + buf.duration / speed();
   gem.sources.push(src);
   src.onended = () => { gem.sources = gem.sources.filter((s) => s !== src); };
+}
+function whenPlaybackEnds(fn) {
+  const wait = Math.max(0, (gem.playHead - audioCtx.currentTime) * 1000);
+  setTimeout(() => { if (state.live && audioCtx.currentTime >= gem.playHead - 0.05) fn(); }, wait + 150);
 }
 function stopPlayback() {
   gem.sources.forEach((s) => { try { s.stop(); } catch {} });
@@ -569,7 +645,7 @@ async function resumeGemini() {
 }
 
 function flushUser() {
-  if (gem.userText.trim()) remember("user", gem.userText.trim());
+  if (gem.userText.trim()) { remember("user", gem.userText.trim()); userLine(gem.userText); }
   gem.userText = "";
 }
 
@@ -616,7 +692,11 @@ async function onGemini(msg, resuming) {
     gem.userText += sc.inputTranscription.text;
     setMode("user"); setStatus("Je t'écoute…", "كنسمعك…"); bumpIdle();
   }
-  if (sc.interrupted) { stopPlayback(); gem.ampText = ""; }
+  if (sc.interrupted) {
+    stopPlayback();
+    if (gem.ampText.trim()) { remember("assistant", gem.ampText.trim()); finishLine(gem.ampText); }
+    gem.ampText = ""; gem.turnBufs = [];
+  }
   if (sc.modelTurn && sc.modelTurn.parts) {
     for (const p of sc.modelTurn.parts) {
       const d = p.inlineData;
@@ -637,12 +717,10 @@ async function onGemini(msg, resuming) {
   }
   if (sc.turnComplete) {
     flushUser();
-    if (gem.ampText.trim()) remember("assistant", gem.ampText.trim());
+    if (gem.ampText.trim()) { remember("assistant", gem.ampText.trim()); finishLine(gem.ampText); }
     gem.ampText = "";
-    const wait = Math.max(0, (gem.playHead - audioCtx.currentTime) * 1000);
-    setTimeout(() => {
-      if (state.live && audioCtx.currentTime >= gem.playHead - 0.05) { setMode("idle"); setStatus("À toi ! Parle quand tu veux.", "دابا نتي، هضري"); }
-    }, wait + 150);
+    if (gem.turnBufs.length) { gem.lastBufs = gem.turnBufs; gem.turnBufs = []; }
+    whenPlaybackEnds(() => { setMode("idle"); setStatus("À toi ! Prends ton temps.", "دابا نتي، خودي وقتك"); });
   }
 }
 
@@ -651,7 +729,7 @@ function stopGemini() {
   gem.ws = null;
   stopPlayback();
   try { gem.worklet && gem.worklet.disconnect(); gem.mic && gem.mic.disconnect(); } catch {}
-  gem.mic = null; gem.handle = null; gem.kicked = false; gem.userText = ""; gem.ampText = ""; gem.gotAudio = false;
+  gem.mic = null; gem.handle = null; gem.kicked = false; gem.userText = ""; gem.ampText = ""; gem.gotAudio = false; gem.turnBufs = [];
   if (gem.worklet) { gem.worklet.port.onmessage = null; }
 }
 
@@ -741,7 +819,7 @@ function onEvent(ev) {
     case "output_audio_buffer.stopped":
     case "output_audio_buffer.cleared":
       bumpIdle();
-      if (anim.mode !== "thinking") { setMode("idle"); setStatus("À toi ! Parle quand tu veux.", "دابا نتي، هضري"); }
+      if (anim.mode !== "thinking") { setMode("idle"); setStatus("À toi ! Prends ton temps.", "دابا نتي، خودي وقتك"); }
       break;
     case "response.done":
       state.responseActive = false;
@@ -751,11 +829,11 @@ function onEvent(ev) {
       runTool(ev.call_id, ev.name, ev.arguments);
       break;
     case "conversation.item.input_audio_transcription.completed":
-      remember("user", ev.transcript);
+      remember("user", ev.transcript); userLine(ev.transcript);
       break;
     case "response.output_audio_transcript.done":
     case "response.audio_transcript.done":
-      if (ev.transcript) { subtitle(ev.transcript); remember("assistant", ev.transcript); }
+      if (ev.transcript) { finishLine(ev.transcript); remember("assistant", ev.transcript); }
       break;
     case "error":
       console.error("Realtime error", ev.error);
@@ -767,7 +845,7 @@ function onEvent(ev) {
 function openTalk(topic) {
   state.topic = topic ? topic.id : null;
   $("title").textContent = topic ? topic.emo + " " + topic.fr : "💬 Amina";
-  subtitle(""); $("sources").innerHTML = "";
+  subtitle(""); $("lines").innerHTML = ""; $("sources").innerHTML = "";
   show("talk");
   hangUp();
 }
@@ -796,6 +874,35 @@ $("wipeBtn").onclick = async () => {
   openMemory();
 };
 $("callBtn").onclick = () => (state.live || state.pc ? hangUp() : startCall());
+const HUH_TEXT = "[Elle a appuyé sur le bouton « je n'ai pas compris ». Explique en darija marocaine, très simplement, ce que tu viens de dire. Puis redis-le en français, très lentement, en phrases très courtes.]";
+$("huhBtn").onclick = () => {
+  if (!state.live) return;
+  bumpIdle();
+  userLine("❓ ما فهمتش");
+  if (state.pc === "gemini") {
+    stopPlayback();
+    if (gem.ampText.trim()) { finishLine(gem.ampText); gem.ampText = ""; }
+    gem.ws && gem.ws.readyState === 1 && gem.ws.send(JSON.stringify({ clientContent: { turns: [{ role: "user", parts: [{ text: HUH_TEXT }] }], turnComplete: true } }));
+  } else {
+    sendEvent({ type: "response.cancel" });
+    sendEvent({ type: "conversation.item.create", item: { type: "message", role: "user", content: [{ type: "input_text", text: HUH_TEXT }] } });
+    sendEvent({ type: "response.create" });
+  }
+};
+$("againBtn").onclick = () => {
+  if (!state.live || state.pc !== "gemini" || !gem.lastBufs.length) return;
+  bumpIdle();
+  stopPlayback();
+  setMode("speaking"); setStatus("", "");
+  gem.lastBufs.forEach(playBuffer);
+  const last = [...document.querySelectorAll("#lines .line:not(.me)")].pop(); markLast(last);
+  whenPlaybackEnds(() => { setMode("idle"); setStatus("À toi ! Prends ton temps.", "دابا نتي، خودي وقتك"); });
+};
+$("speedBtn").onclick = () => {
+  speedIdx = (speedIdx + 1) % SPEEDS.length;
+  localStorage.setItem("speed", String(speed()));
+  showSpeed();
+};
 $("back").onclick = () => { hangUp(); state.topic = null; show("home"); };
 $("memBtn").onclick = openMemory;
 $("friendBtn").onclick = () => openTalk(null);
@@ -826,6 +933,7 @@ $("codeBtn").onclick = async () => {
 faces.push(makeFace($("homeFace")), makeFace($("talkFace")));
 requestAnimationFrame(loop);
 buildTopics();
+showSpeed();
 setCallBtn(false);
 checkCode();
 </script>
